@@ -1,0 +1,77 @@
+_min_copier_version: "9.0.0"
+_subdirectory: templates
+_envops:
+  trim_blocks: true
+  lstrip_blocks: true
+_skip_if_exists:
+  - .xmake/vsmk/deploy.json
+
+project_name:
+  type: str
+  help: Project name and C# root namespace
+  default: MyMod
+  validator: >-
+    {% if not (project_name | regex_search('^[A-Za-z][A-Za-z0-9]*$')) %} Use
+    letters and digits, starting with a letter. {% endif %}
+
+mod_id:
+  type: str
+  help: Vintage Story mod ID
+  default: "{{ project_name | lower }}"
+  validator: >-
+    {% if not (mod_id | regex_search('^[a-z][a-z0-9]*$')) %} Use lowercase
+    letters and digits, starting with a letter. {% endif %}
+
+mod_version:
+  type: str
+  help: Initial mod version
+  default: 0.1.0
+
+description:
+  type: str
+  help: Short project description
+  default: ""
+
+author:
+  type: str
+  help: Author
+  default: ""
+
+side:
+  type: str
+  help: Game side
+  choices:
+    Universal: Universal
+    Client: Client
+    Server: Server
+  default: Universal
+
+settings:
+  type: bool
+  help: Include JSON settings and generated configuration menus
+  default: true
+
+pre_commit:
+  type: bool
+  help: Include pre-commit formatting hooks
+  default: true
+
+deploy:
+  type: str
+  help: Initial deployment directories separated by ; (leave blank to disable)
+  default: ""
+
+vsmk_repository:
+  type: str
+  help: VSMK package repository (URL or local directory)
+  default: https://github.com/gabriel-andreescu/VintageStoryModKit.git
+
+vsmk_version:
+  type: str
+  default: 0.1.0
+  when: false
+
+game_version:
+  type: str
+  default: 1.22.7
+  when: false

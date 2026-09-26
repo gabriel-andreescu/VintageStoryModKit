@@ -1,0 +1,13 @@
+set_xmakever("3.1.1")
+set_project("{{ project_name }}")
+set_policy("package.requires_lock", true)
+
+add_repositories({{ ('vsmk ' ~ vsmk_repository | replace('\\', '/')) | to_json(ensure_ascii=False) }})
+add_addons("vsmk {{ vsmk_version }}")
+includes("@addon/vsmk/project")
+
+target("{{ project_name }}", function()
+    add_rules("@addon/vsmk/mod", { project = "src/{{ project_name }}/{{ project_name }}.csproj" })
+    add_installfiles("$(projectdir)/modinfo.json")
+    add_installfiles("$(projectdir)/(assets/**)")
+end)

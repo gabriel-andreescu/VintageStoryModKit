@@ -1,0 +1,6 @@
+.xmake/
+.vsmk/
+build/
+dist/
+scratch/
+.copier-answers.yml

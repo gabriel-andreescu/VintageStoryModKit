@@ -1,0 +1,28 @@
+# {{ project_name }}
+
+This project uses
+[VintageStoryModKit (VSMK)](https://github.com/gabriel-andreescu/VintageStoryModKit)
+for project generation and development tooling.
+
+## Development
+
+See VSMK's
+[project build instructions](https://github.com/gabriel-andreescu/VintageStoryModKit/blob/main/docs/mod-authors/template/projects.md#build-a-generated-project)
+and
+[deployment and packaging](https://github.com/gabriel-andreescu/VintageStoryModKit/blob/main/docs/mod-authors/tooling/packaging.md).
+{% if pre_commit %}
+
+See
+[formatting setup](https://github.com/gabriel-andreescu/VintageStoryModKit/blob/main/docs/mod-authors/template/defaults.md#formatting).
+{% endif %}
+{% if settings %}
+
+See
+[settings](https://github.com/gabriel-andreescu/VintageStoryModKit/blob/main/docs/mod-authors/template/settings.md)
+for configuration and menu integration.
+{% endif %}
+
+```sh
+xmake
+xmake package
+```

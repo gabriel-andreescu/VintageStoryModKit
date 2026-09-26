@@ -1,0 +1,15 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="../VintageStoryModKit.Build/buildTransitive/VintageStoryModKit.Build.props" />
+  <PropertyGroup>
+    <Description>Settings runtime for Vintage Story mods.</Description>
+    <PackageTags>$(PackageTags) settings</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../VintageStoryModKit.Settings/VintageStoryModKit.Settings.csproj" />
+    <InternalsVisibleTo Include="VintageStoryModKit.Tests" />
+  </ItemGroup>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="../VintageStoryModKit.Build/buildTransitive/VintageStoryModKit.Build.targets" />
+  <Import Project="../ProvidedPackage.targets" />
+</Project>

@@ -1,0 +1,6 @@
+package("vsmk")
+set_kind("addon")
+set_description("Build rules for Vintage Story modding")
+set_license("MIT")
+add_urls("https://github.com/gabriel-andreescu/VintageStoryModKit.git")
+add_versions("0.1.0", "v0.1.0")

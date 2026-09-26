@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "{{ project_name }} settings",
+  "type": "object",
+  "x-vsmk": {
+    "side": "{{ 'Client' if side == 'Client' else 'Server' }}"
+  },
+  "properties": {
+    "Enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

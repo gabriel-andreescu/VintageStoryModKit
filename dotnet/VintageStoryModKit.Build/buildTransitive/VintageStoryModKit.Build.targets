@@ -1,0 +1,148 @@
+<Project>
+  <PropertyGroup>
+    <_VsmkGeneratedPath>$(IntermediateOutputPath)vsmk/</_VsmkGeneratedPath>
+    <VsmkSettingsNamespace Condition="'$(VsmkSettingsNamespace)' == ''"
+      >$(RootNamespace)</VsmkSettingsNamespace>
+    <_VsmkGameReferencesPrivate>false</_VsmkGameReferencesPrivate>
+    <_VsmkGameReferencesPrivate Condition="'$(IsTestProject)' == 'true'"
+      >true</_VsmkGameReferencesPrivate>
+    <_VsmkDotnet>$(DOTNET_HOST_PATH)</_VsmkDotnet>
+    <_VsmkDotnet Condition="'$(_VsmkDotnet)' == ''">dotnet</_VsmkDotnet>
+    <_VsmkBuildToolPath>$(MSBuildThisFileDirectory)../tools/net10.0/VintageStoryModKit.Build.dll</_VsmkBuildToolPath>
+    <_VsmkBuildTool>&quot;$(_VsmkDotnet)&quot; &quot;$(_VsmkBuildToolPath)&quot;</_VsmkBuildTool>
+    <_VsmkGenerateDescriptors>false</_VsmkGenerateDescriptors>
+    <_VsmkGenerateDescriptors
+      Condition="Exists('$(VsmkSettingsSchema)') And Exists('$(VsmkModInfo)')"
+      >true</_VsmkGenerateDescriptors>
+    <_VsmkSettingsTypesFile>$(_VsmkGeneratedPath)$(VsmkSettingsTypeName).g.cs</_VsmkSettingsTypesFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference
+      Include="VintagestoryAPI"
+      HintPath="$(VsmkGamePath)/VintagestoryAPI.dll"
+      Private="$(_VsmkGameReferencesPrivate)"
+    />
+    <Reference
+      Include="VSSurvivalMod"
+      HintPath="$(VsmkGamePath)/Mods/VSSurvivalMod.dll"
+      Private="$(_VsmkGameReferencesPrivate)"
+    />
+    <Reference
+      Include="VSEssentials"
+      HintPath="$(VsmkGamePath)/Mods/VSEssentials.dll"
+      Private="$(_VsmkGameReferencesPrivate)"
+    />
+    <Reference
+      Include="Newtonsoft.Json"
+      HintPath="$(VsmkGamePath)/Lib/Newtonsoft.Json.dll"
+      Private="$(_VsmkGameReferencesPrivate)"
+    />
+    <Reference
+      Include="protobuf-net"
+      HintPath="$(VsmkGamePath)/Lib/protobuf-net.dll"
+      Private="$(_VsmkGameReferencesPrivate)"
+    />
+    <EmbeddedResource
+      Include="$(VsmkSettingsSchema)"
+      LogicalName="VintageStoryModKit.SettingsSchema"
+      Condition="Exists('$(VsmkSettingsSchema)')"
+    />
+    <Compile
+      Include="$(_VsmkSettingsTypesFile)"
+      Condition="Exists('$(VsmkSettingsSchema)') And '$(VsmkGenerateSettingsTypes)' == 'true'"
+    />
+  </ItemGroup>
+  <Target Name="_VsmkCheckGame" BeforeTargets="ResolveAssemblyReferences">
+    <Error
+      Condition="!Exists('$(VsmkGamePath)/VintagestoryAPI.dll')"
+      Text="Set VsmkGamePath or VINTAGE_STORY to your Vintage Story installation."
+    />
+  </Target>
+  <Target
+    Name="_VsmkGenerateSettings"
+    BeforeTargets="PrepareResources"
+    Condition="'$(_VsmkGenerateDescriptors)' == 'true'"
+    Inputs="$(VsmkSettingsSchema);$(VsmkModInfo);$(_VsmkBuildToolPath)"
+    Outputs="$(_VsmkGeneratedPath)generated-files.txt"
+  >
+    <!-- The tool reports errors against its input files, so the command line would only repeat them. -->
+    <Exec
+      EchoOff="true"
+      Command="$(_VsmkBuildTool) generate-settings &quot;$(VsmkSettingsSchema)&quot; &quot;$(VsmkModInfo)&quot; &quot;$(_VsmkGeneratedPath)&quot;"
+    />
+    <ItemGroup>
+      <FileWrites Include="$(_VsmkGeneratedPath)generated-files.txt;$(_VsmkGeneratedPath)assets/**" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_VsmkWriteSettingsTypesArguments">
+    <WriteLinesToFile
+      File="$(_VsmkGeneratedPath)settings-types.args"
+      Lines="$(VsmkSettingsNamespace);$(VsmkSettingsTypeName)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+    />
+    <ItemGroup>
+      <FileWrites Include="$(_VsmkGeneratedPath)settings-types.args" />
+    </ItemGroup>
+  </Target>
+  <Target
+    Name="_VsmkGenerateSettingsTypes"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="_VsmkWriteSettingsTypesArguments"
+    Condition="Exists('$(VsmkSettingsSchema)') And '$(VsmkGenerateSettingsTypes)' == 'true'"
+    Inputs="$(VsmkSettingsSchema);$(_VsmkBuildToolPath);$(_VsmkGeneratedPath)settings-types.args"
+    Outputs="$(_VsmkSettingsTypesFile)"
+  >
+    <Exec
+      EchoOff="true"
+      Command="$(_VsmkBuildTool) generate-settings-types &quot;$(VsmkSettingsSchema)&quot; &quot;$(_VsmkSettingsTypesFile)&quot; &quot;$(VsmkSettingsNamespace)&quot; &quot;$(VsmkSettingsTypeName)&quot;"
+    />
+    <!-- The generator skips unchanged content, so the output could stay older than its inputs and rerun every build. -->
+    <Touch Files="$(_VsmkSettingsTypesFile)" />
+    <ItemGroup>
+      <FileWrites Include="$(_VsmkSettingsTypesFile)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_VsmkCheckStagePath">
+    <Error
+      Condition="'$(VsmkStagePath)' == ''"
+      Text="Set VsmkStagePath to the staging directory."
+    />
+  </Target>
+  <Target Name="VsmkStage" DependsOnTargets="_VsmkCheckStagePath;Build">
+    <ReadLinesFromFile
+      File="$(_VsmkGeneratedPath)generated-files.txt"
+      Condition="'$(_VsmkGenerateDescriptors)' == 'true'"
+    >
+      <Output TaskParameter="Lines" ItemName="_VsmkGeneratedRelative" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <_VsmkRuntimeCandidate Include="$(TargetPath);@(ReferenceCopyLocalPaths)" />
+      <_VsmkRuntimeCandidate
+        Remove="@(_VsmkProvidedPackage)"
+        MatchOnMetadata="NuGetPackageId"
+        MatchOnMetadataOptions="CaseInsensitive"
+      />
+      <_VsmkRuntime
+        Include="@(_VsmkRuntimeCandidate)"
+        Condition="'%(Extension)' != '.pdb' And '%(Extension)' != '.xml'"
+      />
+      <_VsmkStageFile Include="@(_VsmkRuntime)">
+        <Destination>%(_VsmkRuntime.DestinationSubDirectory)%(_VsmkRuntime.Filename)%(_VsmkRuntime.Extension)</Destination>
+      </_VsmkStageFile>
+      <_VsmkStageFile Include="@(_VsmkGeneratedRelative->'$(_VsmkGeneratedPath)%(Identity)')">
+        <Destination>%(_VsmkGeneratedRelative.Identity)</Destination>
+      </_VsmkStageFile>
+    </ItemGroup>
+    <MakeDir Directories="$(VsmkStagePath)" />
+    <Copy
+      SourceFiles="@(_VsmkStageFile)"
+      DestinationFiles="@(_VsmkStageFile->'$(VsmkStagePath)/%(Destination)')"
+    />
+    <WriteLinesToFile
+      File="$(VsmkStagePath)/.vsmk-files"
+      Lines="@(_VsmkStageFile->'%(Destination)')"
+      Overwrite="true"
+    />
+  </Target>
+</Project>

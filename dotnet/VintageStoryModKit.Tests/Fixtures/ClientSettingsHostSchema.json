@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "x-vsmk": {
+    "side": "Client"
+  },
+  "properties": {
+    "Enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "Tuning": {
+      "type": "object",
+      "properties": {
+        "Count": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 5
+        }
+      }
+    }
+  }
+}

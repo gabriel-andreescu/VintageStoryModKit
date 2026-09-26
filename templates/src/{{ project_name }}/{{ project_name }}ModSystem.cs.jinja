@@ -1,0 +1,38 @@
+using Vintagestory.API.Common;
+{% if settings %}
+using VintageStoryModKit;
+{% endif %}
+
+namespace {{ project_name }};
+
+public sealed class {{ project_name }}ModSystem : ModSystem
+{
+{% if settings %}
+    private SettingsHost? settings;
+
+    public override void Start(ICoreAPI api)
+    {
+        settings = SettingsHost.Open(api, this);
+        settings.Changed += ApplySettings;
+        if (settings.IsReady)
+        {
+            ApplySettings();
+        }
+    }
+
+    private void ApplySettings() =>
+        Mod.Logger.Notification("{{ project_name }} enabled: {0}", settings!.Snapshot<ModSettings>().Enabled);
+
+    public override void Dispose()
+    {
+        settings?.Dispose();
+        settings = null;
+        base.Dispose();
+    }
+{% else %}
+    public override void Start(ICoreAPI api)
+    {
+        Mod.Logger.Notification("{{ project_name }} loaded.");
+    }
+{% endif %}
+}

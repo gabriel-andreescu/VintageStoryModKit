@@ -1,0 +1,9 @@
+.xmake/
+.vsmk/
+build/
+dist/
+.idea/
+.vs/
+scratch/
+**/TestResults/
+*.user

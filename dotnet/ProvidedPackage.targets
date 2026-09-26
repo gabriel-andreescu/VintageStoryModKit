@@ -1,0 +1,32 @@
+<Project>
+  <!-- The VintageStoryModKit mod ships these packages' runtime assemblies. Consumers stage none of them and depend on that mod instead. -->
+  <PropertyGroup>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_VsmkPackProvidedPackages</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+  <Target Name="_VsmkPackProvidedPackages" DependsOnTargets="ResolvePackageAssets">
+    <ItemGroup>
+      <_VsmkProvidedPackageId Include="$(PackageId);@(RuntimeCopyLocalItems->'%(NuGetPackageId)')" />
+    </ItemGroup>
+    <RemoveDuplicates Inputs="@(_VsmkProvidedPackageId)">
+      <Output TaskParameter="Filtered" ItemName="_VsmkProvidedPackageIdUnique" />
+    </RemoveDuplicates>
+    <ItemGroup>
+      <_VsmkProvidedLine Include="&lt;Project&gt;&lt;ItemGroup&gt;" />
+      <_VsmkProvidedLine Include="@(_VsmkProvidedPackageIdUnique->'&lt;_VsmkProvidedPackage Include=&quot;%(Identity)&quot; NuGetPackageId=&quot;%(Identity)&quot; /&gt;')" />
+      <_VsmkProvidedLine Include="&lt;/ItemGroup&gt;&lt;/Project&gt;" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)$(PackageId).props"
+      Lines="@(_VsmkProvidedLine)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+    />
+    <ItemGroup>
+      <FileWrites Include="$(IntermediateOutputPath)$(PackageId).props" />
+      <TfmSpecificPackageFile
+        Include="$(IntermediateOutputPath)$(PackageId).props"
+        PackagePath="buildTransitive/$(PackageId).props"
+      />
+    </ItemGroup>
+  </Target>
+</Project>

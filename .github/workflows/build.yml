@@ -1,0 +1,155 @@
+name: Build and release mod
+
+on:
+  workflow_call:
+    inputs:
+      project-directory:
+        description: Project directory relative to the repository root.
+        default: .
+        type: string
+      modinfo:
+        description: Primary mod metadata relative to the project directory.
+        default: modinfo.json
+        type: string
+      game-version:
+        description:
+          Game release to compile against, independent of mod compatibility.
+        required: true
+        type: string
+      run-tests:
+        description: Run the project's XMake tests before packaging.
+        default: false
+        type: boolean
+      dist-directory:
+        description: ZIP output directory relative to the project.
+        default: build/dist
+        type: string
+      configure-arguments:
+        description: Additional XMake configure arguments, one per line.
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.metadata.outputs.version }}
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: ${{ inputs.project-directory }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version:
+            ${{ hashFiles(format('{0}/global.json', inputs.project-directory))
+            == '' && '10.0.x' || '' }}
+          global-json-file:
+            ${{ hashFiles(format('{0}/global.json', inputs.project-directory))
+            != '' && format('{0}/global.json', inputs.project-directory) || ''
+            }}
+
+      - uses: xmake-io/github-action-setup-xmake@3a1a5dddfc7fa625d9a698738334bf55655a861a
+        with:
+          xmake-version: "3.1.1"
+          actions-cache-folder: .xmake-install
+
+      - name: Read mod metadata
+        id: metadata
+        env:
+          MODINFO_PATH: ${{ inputs.modinfo }}
+        run: |
+          $metadata = Get-Content -LiteralPath $env:MODINFO_PATH -Raw | ConvertFrom-Json
+          "version=$($metadata.version)" >> $env:GITHUB_OUTPUT
+
+      - uses: gabriel-andreescu/VintageStoryModKit/.github/actions/setup-game@v0.1.0
+        with:
+          version: ${{ inputs.game-version }}
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key:
+            nuget-${{ runner.os }}-${{ hashFiles(format('{0}/**/*.csproj',
+            inputs.project-directory), format('{0}/**/packages.lock.json',
+            inputs.project-directory), format('{0}/**/Directory.Packages.props',
+            inputs.project-directory), format('{0}/**/Directory.Build.props',
+            inputs.project-directory), format('{0}/.config/dotnet-tools.json',
+            inputs.project-directory)) }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Configure
+        env:
+          DIST_DIRECTORY: ${{ inputs.dist-directory }}
+          CONFIGURE_ARGUMENTS: ${{ inputs.configure-arguments }}
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          $arguments = @($env:CONFIGURE_ARGUMENTS -split "`r?`n" | Where-Object { $_.Trim() })
+          xmake f -y @arguments --game_path="$env:VINTAGE_STORY" --deploy=n --distdir="$env:DIST_DIRECTORY"
+
+      - name: Build
+        run: xmake -y
+
+      - uses: astral-sh/setup-uv@45c121f982720f3bdf236c2ac06f126ca211949c
+        if: hashFiles('.pre-commit-config.yaml') != ''
+        with:
+          version: "0.12.13"
+          enable-cache: true
+
+      - name: Cache pre-commit environments
+        if: hashFiles('.pre-commit-config.yaml') != ''
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pre-commit
+          key:
+            pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml')
+            }}
+
+      - name: Lint and format
+        if: hashFiles('.pre-commit-config.yaml') != ''
+        working-directory: ${{ github.workspace }}
+        run:
+          uvx --from pre-commit==4.6.2 pre-commit run --all-files
+          --show-diff-on-failure
+
+      - name: Test
+        if: inputs.run-tests
+        run: xmake test
+
+      - name: Package
+        run: xmake package -y
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: packages
+          path:
+            ${{ inputs.project-directory }}/${{ inputs.dist-directory
+            }}/**/*.zip
+          if-no-files-found: error
+          compression-level: 0
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: package-metadata
+          path: ${{ inputs.project-directory }}/.xmake/vsmk/packages/*.json
+          include-hidden-files: true
+          if-no-files-found: error
+
+  release:
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: build
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release.yml
+    with:
+      project-directory: ${{ inputs.project-directory }}
+      expected-version: ${{ needs.build.outputs.version }}
+      artifact: packages
+      metadata: package-metadata

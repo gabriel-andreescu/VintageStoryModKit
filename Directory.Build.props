@@ -1,0 +1,22 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <PathMap>$(MSBuildThisFileDirectory)=/_/</PathMap>
+    <Version>0.1.0</Version>
+    <Authors>Gabriel Andreescu</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/gabriel-andreescu/VintageStoryModKit</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/gabriel-andreescu/VintageStoryModKit.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>vintagestory modding</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" Condition="Exists('README.md')" />
+  </ItemGroup>
+</Project>

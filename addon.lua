@@ -1,0 +1,5 @@
+addon("vsmk")
+set_homepage("https://github.com/gabriel-andreescu/VintageStoryModKit")
+set_description("Build rules for Vintage Story modding")
+set_license("MIT")
+set_sourcedir("xmake")

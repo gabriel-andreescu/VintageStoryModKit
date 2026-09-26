@@ -1,0 +1,2 @@
+{% set destinations = deploy.split(';') | map('trim') | reject('equalto', '') | list %}
+{{ {project_name: destinations} | to_json(indent=2, ensure_ascii=False) }}

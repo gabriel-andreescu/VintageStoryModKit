@@ -1,0 +1,10 @@
+.venv/
+.xmake/
+build/
+dist/
+scratch/
+**/bin/
+**/obj/
+**/TestResults/
+uv.lock
+**/*.jinja

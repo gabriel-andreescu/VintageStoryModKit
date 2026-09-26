@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <VsmkGamePath Condition="'$(VsmkGamePath)' == ''">$(VINTAGE_STORY)</VsmkGamePath>
+    <VsmkSettingsSchema Condition="'$(VsmkSettingsSchema)' == ''"
+      >Settings/settings.schema.json</VsmkSettingsSchema>
+    <VsmkModInfo Condition="'$(VsmkModInfo)' == ''"
+      >$([MSBuild]::GetPathOfFileAbove('modinfo.json', '$(MSBuildProjectDirectory)'))</VsmkModInfo>
+    <VsmkGenerateSettingsTypes Condition="'$(VsmkGenerateSettingsTypes)' == ''"
+      >true</VsmkGenerateSettingsTypes>
+    <VsmkSettingsTypeName Condition="'$(VsmkSettingsTypeName)' == ''"
+      >ModSettings</VsmkSettingsTypeName>
+    <!-- Staging reads package runtime assemblies from ReferenceCopyLocalPaths, which class libraries leave empty by default. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+</Project>

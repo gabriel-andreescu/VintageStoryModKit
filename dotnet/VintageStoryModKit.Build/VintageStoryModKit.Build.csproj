@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RollForward>Major</RollForward>
+    <Description>Build and staging tools for Vintage Story mods.</Description>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_VsmkPackTool</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../VintageStoryModKit.Settings/VintageStoryModKit.Settings.csproj" />
+    <InternalsVisibleTo Include="VintageStoryModKit.Tests" />
+    <None
+      Include="buildTransitive/**"
+      Pack="true"
+      PackagePath="buildTransitive/%(RecursiveDir)%(Filename)%(Extension)"
+    />
+    <None Include="../../licenses/*.txt" Pack="true" PackagePath="licenses/" />
+  </ItemGroup>
+  <Target Name="_VsmkPackTool">
+    <ItemGroup>
+      <TfmSpecificPackageFile
+        Include="$(OutDir)*.dll;$(OutDir)*.deps.json;$(OutDir)*.runtimeconfig.json"
+        PackagePath="tools/$(TargetFramework)/"
+      />
+    </ItemGroup>
+  </Target>
+</Project>

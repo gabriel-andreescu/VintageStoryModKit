@@ -1,0 +1,14 @@
+{
+  "type": "code",
+  "modid": "{{ mod_id }}",
+  "name": "{{ project_name }}",
+  "authors": [{% if author %}{{ author | to_json(ensure_ascii=False) }}{% endif %}],
+  "description": {{ description | to_json(ensure_ascii=False) }},
+  "version": "{{ mod_version }}",
+  "dependencies": {
+    "game": "{{ game_version }}"{% if settings %},
+    "vintagestorymodkit": "{{ vsmk_version }}"{% endif %}
+
+  },
+  "side": "{{ side }}"
+}

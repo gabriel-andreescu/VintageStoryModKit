@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>JSON settings storage and validation for Vintage Story mods.</Description>
+    <PackageTags>$(PackageTags) settings</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="JsonSchema.Net" Version="7.4.0" />
+    <InternalsVisibleTo Include="VintageStoryModKit.Build" />
+  </ItemGroup>
+  <Import Project="../ProvidedPackage.targets" />
+</Project>

@@ -1,0 +1,53 @@
+name: Set up Vintage Story
+description: Download the official server distribution for build references.
+inputs:
+  version:
+    description: Vintage Story release supplying the build assemblies.
+    required: true
+outputs:
+  path:
+    description: Directory containing the game assemblies.
+    value: ${{ steps.install.outputs.path }}
+runs:
+  using: composite
+  steps:
+    - name: Install game references
+      id: install
+      shell: pwsh
+      env:
+        GAME_VERSION: ${{ inputs.version }}
+      run: |
+        $ErrorActionPreference = 'Stop'
+        if ($env:GAME_VERSION -cnotmatch '^\d+\.\d+\.\d+(?:-(?:pre|rc)\.\d+)?$') {
+            throw 'Select a Vintage Story release to download for build references.'
+        }
+        $channel = if ($env:GAME_VERSION.Contains('-')) { 'unstable' } else { 'stable' }
+        $catalog = Invoke-RestMethod "https://api.vintagestory.at/$channel.json"
+        $release = $catalog.($env:GAME_VERSION).linuxserver
+        if (-not $release.urls.cdn -or -not $release.md5) {
+            throw "No Linux server download for Vintage Story $env:GAME_VERSION."
+        }
+        $archive = Join-Path $env:RUNNER_TEMP ([guid]::NewGuid().ToString() + '.tar.gz')
+        $destination = Join-Path $env:RUNNER_TEMP ('vintagestory-' + [guid]::NewGuid().ToString())
+        try {
+            Invoke-WebRequest -Uri $release.urls.cdn -OutFile $archive
+            if ((Get-FileHash -LiteralPath $archive -Algorithm MD5).Hash -ine $release.md5) {
+                throw 'The Vintage Story archive does not match the published checksum.'
+            }
+            New-Item -ItemType Directory -Path $destination | Out-Null
+            Add-Type -AssemblyName System.Formats.Tar
+            $stream = [IO.Compression.GZipStream]::new(
+                [IO.File]::OpenRead($archive), [IO.Compression.CompressionMode]::Decompress)
+            try { [Formats.Tar.TarFile]::ExtractToDirectory($stream, $destination, $false) }
+            finally { $stream.Dispose() }
+            $assemblies = @(Get-ChildItem -LiteralPath $destination -Filter VintagestoryAPI.dll -Recurse -File)
+            if ($assemblies.Count -ne 1) { throw 'The server archive must contain one VintagestoryAPI.dll.' }
+            $gamePath = $assemblies[0].DirectoryName
+            "path=$gamePath" >> $env:GITHUB_OUTPUT
+            "VINTAGE_STORY=$gamePath" >> $env:GITHUB_ENV
+        } catch {
+            if (Test-Path -LiteralPath $destination) { Remove-Item -LiteralPath $destination -Recurse -Force }
+            throw
+        } finally {
+            if (Test-Path -LiteralPath $archive) { Remove-Item -LiteralPath $archive -Force }
+        }

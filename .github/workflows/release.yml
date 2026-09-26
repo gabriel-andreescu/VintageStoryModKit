@@ -1,0 +1,231 @@
+name: Publish release
+
+on:
+  workflow_call:
+    inputs:
+      project-directory:
+        description: Project directory relative to the repository root.
+        default: .
+        type: string
+      expected-version:
+        description: Require the release tag to match this version.
+        default: ""
+        type: string
+      changelog:
+        description: Root changelog path relative to the project directory.
+        default: CHANGELOG.md
+        type: string
+      artifact:
+        description:
+          Actions artifact containing release ZIPs. Leave empty for a source
+          release.
+        default: ""
+        type: string
+      metadata:
+        description: Actions artifact containing VSMK package metadata.
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    outputs:
+      entries: ${{ steps.entries.outputs.entries }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate release version
+        id: version
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          EXPECTED_VERSION: ${{ inputs.expected-version }}
+        run: |
+          if ($env:RELEASE_TAG -cnotmatch '^v?\d+\.\d+\.\d+$') {
+              throw 'Release tags must use X.Y.Z or vX.Y.Z.'
+          }
+          $version = $env:RELEASE_TAG -creplace '^v', ''
+          if ($env:EXPECTED_VERSION -and $version -cne $env:EXPECTED_VERSION) {
+              throw "Tag '$env:RELEASE_TAG' does not match expected version '$env:EXPECTED_VERSION'."
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - if: inputs.metadata != ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ inputs.metadata }}
+          path: package-metadata
+
+      - name: Select changelog entries
+        id: entries
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+          PROJECT_DIRECTORY: ${{ inputs.project-directory }}
+          CHANGELOG_PATH: ${{ inputs.changelog }}
+          PACKAGE_METADATA: ${{ inputs.metadata }}
+        run: |
+          $project = [IO.Path]::GetFullPath($env:PROJECT_DIRECTORY)
+          $root = [IO.Path]::GetFullPath((Join-Path $project $env:CHANGELOG_PATH))
+          $entries = @([ordered]@{
+              id = '0000'
+              path = [IO.Path]::GetRelativePath((Get-Location).Path, $root)
+              version = $env:RELEASE_VERSION
+              names = ''
+          })
+          if ($env:PACKAGE_METADATA) {
+              $packages = @(Get-ChildItem -LiteralPath package-metadata -Filter '*.json' -File |
+                  ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json })
+              $groups = [ordered]@{}
+              foreach ($package in ($packages | Sort-Object target)) {
+                  if (-not $package.changelog) { continue }
+                  $path = [IO.Path]::GetFullPath((Join-Path $project $package.changelog))
+                  if ($path -ceq $root -and $package.version -ceq $env:RELEASE_VERSION) { continue }
+                  $key = "$path`n$($package.version)"
+                  if (-not $groups.Contains($key)) {
+                      $groups[$key] = [ordered]@{
+                          id = '{0:D4}' -f ($groups.Count + 1)
+                          path = [IO.Path]::GetRelativePath((Get-Location).Path, $path)
+                          version = $package.version
+                          names = @()
+                      }
+                  }
+                  $groups[$key].names += $package.name
+              }
+              foreach ($entry in $groups.Values) {
+                  $entry.names = ($entry.names | Select-Object -Unique) -join ', '
+                  $entries += $entry
+              }
+          }
+          "entries=$(ConvertTo-Json -InputObject $entries -Depth 5 -Compress)" >> $env:GITHUB_OUTPUT
+
+  notes:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        entry: ${{ fromJSON(needs.prepare.outputs.entries) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Read changelog
+        id: changelog
+        uses: mindsers/changelog-reader-action@1faaf50aa09d5793d9a100819973df801febfb31 # v2.4.0
+        with:
+          version: ${{ matrix.entry.version }}
+          path: ${{ matrix.entry.path }}
+
+      - name: Prepare release notes
+        shell: pwsh
+        env:
+          RELEASE_DATE: ${{ steps.changelog.outputs.date }}
+          RELEASE_STATUS: ${{ steps.changelog.outputs.status }}
+          RELEASE_NOTES: ${{ steps.changelog.outputs.changes_file }}
+          NOTES_ID: ${{ matrix.entry.id }}
+          PACKAGE_NAMES: ${{ matrix.entry.names }}
+          PACKAGE_VERSION: ${{ matrix.entry.version }}
+        run: |
+          $date = [datetime]::MinValue
+          if ($env:RELEASE_STATUS -ne 'released' -or
+              -not [datetime]::TryParseExact($env:RELEASE_DATE, 'yyyy-MM-dd',
+                  [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::None, [ref] $date)) {
+              throw 'The changelog release needs a YYYY-MM-DD date and released status.'
+          }
+          $notes = Get-Content -LiteralPath $env:RELEASE_NOTES -Raw
+          if ([string]::IsNullOrWhiteSpace($notes)) {
+              throw 'The changelog release has no notes.'
+          }
+          New-Item -ItemType Directory -Path release-notes -Force | Out-Null
+          if ($env:PACKAGE_NAMES) {
+              $notes = "## $env:PACKAGE_NAMES - v$env:PACKAGE_VERSION`n`n$($notes.TrimStart())"
+          }
+          Set-Content -LiteralPath "release-notes/$env:NOTES_ID.md" -Value $notes -NoNewline
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-notes-${{ matrix.entry.id }}
+          path: release-notes/*
+          if-no-files-found: error
+
+  publish:
+    needs: notes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: release-notes-*
+          path: release-notes
+          merge-multiple: true
+
+      - name: Combine release notes
+        shell: pwsh
+        run: |
+          $sections = @(Get-ChildItem -LiteralPath release-notes -Filter '*.md' -File |
+              Sort-Object Name | ForEach-Object { (Get-Content -LiteralPath $_.FullName -Raw).Trim() })
+          Set-Content -LiteralPath release-notes.md -Value ($sections -join "`n`n")
+
+      - if: inputs.artifact != ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ inputs.artifact }}
+          path: packages
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          PACKAGE_ARTIFACT: ${{ inputs.artifact }}
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          $assets = @()
+          $staging = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString())
+          try {
+              if ($env:PACKAGE_ARTIFACT) {
+                  $root = (Resolve-Path packages).Path
+                  $files = @(Get-ChildItem -LiteralPath $root -Recurse -File -Filter '*.zip')
+                  if ($files.Count -eq 0) { throw 'The release artifact contains no ZIPs.' }
+                  $names = @{}
+                  foreach ($group in ($files | Group-Object Name)) {
+                      foreach ($file in $group.Group) {
+                          $name = $file.Name
+                          if ($group.Count -gt 1) {
+                              $target = [IO.Path]::GetRelativePath($root, $file.DirectoryName)
+                              if ($name.StartsWith("$($file.Directory.Name)-", [StringComparison]::OrdinalIgnoreCase)) {
+                                  $target = [IO.Path]::GetDirectoryName($target)
+                              }
+                              if ($target) {
+                                  $target = $target.Replace('\', '-').Replace('/', '-')
+                                  $name = "$target-$name"
+                              }
+                          }
+                          if ($names.ContainsKey($name)) { throw "Duplicate release filename '$name'. Set distinct package names." }
+                          $names[$name] = $file.FullName
+                      }
+                  }
+                  foreach ($entry in $names.GetEnumerator()) {
+                      if ([IO.Path]::GetFileName($entry.Value) -ceq $entry.Key) {
+                          $assets += $entry.Value
+                      } else {
+                          New-Item -ItemType Directory -Path $staging -Force | Out-Null
+                          $destination = Join-Path $staging $entry.Key
+                          Copy-Item -LiteralPath $entry.Value -Destination $destination
+                          $assets += $destination
+                      }
+                  }
+              }
+              gh release create $env:RELEASE_TAG @assets --verify-tag --title $env:RELEASE_TAG --notes-file release-notes.md
+          } finally {
+              if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Recurse -Force }
+          }
