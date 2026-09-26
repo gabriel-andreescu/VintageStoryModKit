@@ -46,10 +46,16 @@ new release.
 
 ## Validate package and rule changes
 
-Install the changed packages in a
-[consumer project](docs/mod-authors/tooling/building.md), then build and package
-it. Use `build/nuget` as a local NuGet source and an isolated package cache when
-rebuilding an unpublished version.
+Pack the changed packages with a unique prerelease suffix, so they never share a
+version with a release or an earlier local pack that NuGet has cached:
+
+```powershell
+dotnet pack -c Release -o build/nuget --version-suffix "dev.$(Get-Date -Format yyyyMMddHHmmss)"
+```
+
+Add `build/nuget` as a NuGet source in a
+[consumer project](docs/mod-authors/tooling/building.md), reference the packed
+version, then build and package it.
 
 For shared XMake rules, register the local checkout as the consumer's `vsmk`
 repository and install it with XMake's `--debugdir` option:
@@ -90,7 +96,7 @@ Keep the XMake version in CI and consumer workflows aligned with
 
 For VSMK releases, update:
 
-- `Version` in `Directory.Build.props`.
+- `VersionPrefix` in `Directory.Build.props`.
 - The version in `dotnet/VintageStoryModKit/modinfo.json` and the `add_addons`
   pin in `dotnet/VintageStoryModKit/xmake.lua`.
 - The addon recipe in `addons/v/vsmk/xmake.lua`. Keep existing recipe versions

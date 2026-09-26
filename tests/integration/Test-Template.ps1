@@ -6,7 +6,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $root = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
-$version = (Select-Xml -Path (Join-Path $root "Directory.Build.props") -XPath "//Version").Node.InnerText
+$version = (Select-Xml -Path (Join-Path $root "Directory.Build.props") -XPath "//VersionPrefix").Node.InnerText
 if ([string]::IsNullOrWhiteSpace($GamePath) -or -not (Test-Path (Join-Path $GamePath "VintagestoryAPI.dll"))) {
     throw "Pass -GamePath or set VINTAGE_STORY to a Vintage Story installation."
 }

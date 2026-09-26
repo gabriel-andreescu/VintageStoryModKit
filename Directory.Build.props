@@ -7,7 +7,7 @@
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <PathMap>$(MSBuildThisFileDirectory)=/_/</PathMap>
-    <Version>0.1.0</Version>
+    <VersionPrefix>0.1.0</VersionPrefix>
     <Authors>Gabriel Andreescu</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
