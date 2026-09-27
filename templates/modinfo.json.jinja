@@ -6,9 +6,7 @@
   "description": {{ description | to_json(ensure_ascii=False) }},
   "version": "{{ mod_version }}",
   "dependencies": {
-    "game": "{{ game_version }}"{% if settings %},
-    "vintagestorymodkit": "{{ vsmk_version }}"{% endif %}
-
+    "game": "{{ game_version }}"
   },
   "side": "{{ side }}"
 }

@@ -97,13 +97,9 @@ jobs:
           RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
         run: |
           $PSNativeCommandUseErrorActionPreference = $true
-          $version = dotnet msbuild dotnet/VintageStoryModKit/VintageStoryModKit.csproj --getProperty:PackageVersion --nologo
+          $version = dotnet msbuild dotnet/VintageStoryModKit.Settings/VintageStoryModKit.Settings.csproj --getProperty:PackageVersion --nologo
           if ($env:RELEASE_TAG -and $env:RELEASE_TAG -cne "v$version") {
               throw "Tag '$env:RELEASE_TAG' does not match package version '$version'."
-          }
-          $modVersion = (Get-Content -Raw dotnet/VintageStoryModKit/modinfo.json | ConvertFrom-Json).version
-          if ($modVersion -cne $version) {
-              throw "Runtime mod version '$modVersion' does not match package version '$version'."
           }
           "version=$version" >> $env:GITHUB_OUTPUT
 
@@ -116,33 +112,12 @@ jobs:
           pwsh -NoProfile -File tests/integration/Test-Template.ps1
           dotnet pack --configuration Release --no-build --output build/nuget
 
-      - name: Package runtime mod
-        env:
-          VSMK_VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          $PSNativeCommandUseErrorActionPreference = $true
-          $env:XMAKE_GLOBALDIR = Join-Path $env:RUNNER_TEMP 'xmake-global'
-          $root = $PWD.Path.Replace('\', '/')
-          xmake repo --add --global vsmk $root
-          xrepo install --addon -y "--debugdir=$root" "vsmk $env:VSMK_VERSION"
-          Set-Location dotnet/VintageStoryModKit
-          xmake f -y --game_path="$env:VINTAGE_STORY"
-          xmake package
-
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: github.ref_type == 'tag'
         with:
           name: nuget-package
           path: build/nuget/*.nupkg
           if-no-files-found: error
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: github.ref_type == 'tag'
-        with:
-          name: runtime-mod
-          path: dotnet/VintageStoryModKit/build/dist/**/*.zip
-          if-no-files-found: error
-          compression-level: 0
 
   release:
     if: github.event_name == 'push' && github.ref_type == 'tag'
@@ -152,7 +127,6 @@ jobs:
     uses: ./.github/workflows/release.yml
     with:
       expected-version: ${{ needs.checks.outputs.version }}
-      artifact: runtime-mod
 
   nuget:
     needs: release

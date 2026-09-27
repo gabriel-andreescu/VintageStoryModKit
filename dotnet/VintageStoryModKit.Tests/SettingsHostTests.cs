@@ -3,7 +3,7 @@ using NSubstitute;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
-using VintageStoryModKit;
+using VintageStoryModKit.Settings;
 
 namespace VintageStoryModKit.Tests;
 
@@ -153,7 +153,7 @@ public sealed class SettingsHostTests : IDisposable
             context.Api,
             new ModInfo { ModID = ModId, Side = EnumAppSide.Client },
             typeof(SettingsHostTests).Assembly,
-            "VintageStoryModKit.ClientSettingsSchema"
+            "VintageStoryModKit.Settings.ClientSchema"
         );
 
         Assert.True(host.IsReady);
@@ -200,8 +200,8 @@ public sealed class SettingsHostTests : IDisposable
     }
 
     [Theory]
-    [InlineData(EnumAppSide.Client, "VintageStoryModKit.SettingsSchema")]
-    [InlineData(EnumAppSide.Server, "VintageStoryModKit.ClientSettingsSchema")]
+    [InlineData(EnumAppSide.Client, "VintageStoryModKit.Settings.Schema")]
+    [InlineData(EnumAppSide.Server, "VintageStoryModKit.Settings.ClientSchema")]
     public void OneSidedModsRejectSettingsOwnedByTheOtherSide(EnumAppSide modSide, string resource)
     {
         ICoreAPI api = modSide == EnumAppSide.Client ? CreateClient().Api : CreateServer().Api;

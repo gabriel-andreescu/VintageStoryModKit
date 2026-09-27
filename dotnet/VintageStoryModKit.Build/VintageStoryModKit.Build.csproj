@@ -8,8 +8,15 @@
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_VsmkPackTool</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../VintageStoryModKit.Settings/VintageStoryModKit.Settings.csproj" />
+    <ProjectReference Include="../VintageStoryModKit.Settings.Core/VintageStoryModKit.Settings.Core.csproj" />
+    <PackageReference Include="ILRepack" Version="2.0.48" GeneratePathProperty="true" />
     <InternalsVisibleTo Include="VintageStoryModKit.Tests" />
+    <None
+      Include="$(PkgILRepack)/tools/ILRepack.exe;$(PkgILRepack)/tools/ILRepack.runtimeconfig.json"
+      Link="ilrepack/%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest"
+      Visible="false"
+    />
     <None
       Include="buildTransitive/**"
       Pack="true"
@@ -22,6 +29,10 @@
       <TfmSpecificPackageFile
         Include="$(OutDir)*.dll;$(OutDir)*.deps.json;$(OutDir)*.runtimeconfig.json"
         PackagePath="tools/$(TargetFramework)/"
+      />
+      <TfmSpecificPackageFile
+        Include="$(OutDir)ilrepack/*"
+        PackagePath="tools/$(TargetFramework)/ilrepack/"
       />
     </ItemGroup>
   </Target>

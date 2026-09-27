@@ -1,0 +1,106 @@
+<Project>
+  <!-- Mods merge these packages' runtime assemblies into the mod assembly that uses them. -->
+  <ItemGroup>
+    <!-- JsonPointer.Net needs Humanizer only for property name resolvers that VSMK never calls, so mods leave it out. _VsmkCheckOmittedPackages keeps that true. -->
+    <_VsmkOmittedPackageId Include="Humanizer.Core" NuGetPackageId="Humanizer.Core" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_VsmkPackEmbeddedPackages</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+  <Target Name="_VsmkPackEmbeddedPackages" DependsOnTargets="ResolvePackageAssets">
+    <ItemGroup>
+      <_VsmkEmbeddedPackageId Include="$(PackageId);@(RuntimeCopyLocalItems->'%(NuGetPackageId)')" />
+      <_VsmkEmbeddedPackageId Remove="@(_VsmkOmittedPackageId)" />
+    </ItemGroup>
+    <RemoveDuplicates Inputs="@(_VsmkEmbeddedPackageId)">
+      <Output TaskParameter="Filtered" ItemName="_VsmkEmbeddedPackageIdUnique" />
+    </RemoveDuplicates>
+    <ItemGroup>
+      <_VsmkEmbeddedLine Include="&lt;Project&gt;&lt;ItemGroup&gt;" />
+      <_VsmkEmbeddedLine Include="@(_VsmkEmbeddedPackageIdUnique->'&lt;_VsmkEmbeddedPackage Include=&quot;%(Identity)&quot; NuGetPackageId=&quot;%(Identity)&quot; /&gt;')" />
+      <_VsmkEmbeddedLine Include="@(_VsmkOmittedPackageId->'&lt;_VsmkOmittedPackage Include=&quot;%(Identity)&quot; NuGetPackageId=&quot;%(Identity)&quot; /&gt;')" />
+      <_VsmkEmbeddedLine Include="@(_VsmkNotice->'&lt;_VsmkEmbeddedNotice Include=&quot;%24(MSBuildThisFileDirectory)../licenses/%(Name)&quot; /&gt;')" />
+      <_VsmkEmbeddedLine Include="&lt;/ItemGroup&gt;&lt;/Project&gt;" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)$(PackageId).props"
+      Lines="@(_VsmkEmbeddedLine)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+    />
+    <!-- NuGet treats a PackagePath as a folder when the source has no extension, as LICENSE does. -->
+    <Copy
+      SourceFiles="@(_VsmkNotice)"
+      DestinationFiles="@(_VsmkNotice->'$(IntermediateOutputPath)vsmk-notices/%(Name)')"
+      SkipUnchangedFiles="true"
+    />
+    <ItemGroup>
+      <TfmSpecificPackageFile
+        Include="$(IntermediateOutputPath)$(PackageId).props"
+        PackagePath="buildTransitive/$(PackageId).props"
+      />
+      <TfmSpecificPackageFile
+        Include="@(_VsmkNotice->'$(IntermediateOutputPath)vsmk-notices/%(Name)')"
+        PackagePath="licenses/"
+      />
+    </ItemGroup>
+  </Target>
+  <!-- Trims the runtime with its own assemblies as roots. An omitted package that survives is reachable from VSMK and would fail to load in mods. -->
+  <Target
+    Name="_VsmkCheckOmittedPackages"
+    AfterTargets="Build"
+    Condition="'$(_VsmkCheckOmittedPackages)' == 'true'"
+    Inputs="$(TargetPath);@(ReferenceCopyLocalPaths);$(MSBuildThisFileFullPath)"
+    Outputs="$(IntermediateOutputPath)vsmk-reachability.stamp"
+  >
+    <PropertyGroup>
+      <_VsmkReachabilityPath>$(IntermediateOutputPath)vsmk-reachability/</_VsmkReachabilityPath>
+      <_VsmkFrameworkPath>$(NetCoreRoot)shared/Microsoft.NETCore.App/$(BundledNETCoreAppPackageVersion)</_VsmkFrameworkPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <_VsmkReachabilityRoot Include="$(TargetPath)" />
+      <_VsmkReachabilityRoot
+        Include="@(ReferenceCopyLocalPaths)"
+        Condition="'%(ReferenceCopyLocalPaths.ReferenceSourceTarget)' == 'ProjectReference' And '%(ReferenceCopyLocalPaths.Extension)' == '.dll'"
+      />
+      <_VsmkReachabilityLibrary
+        Include="@(ReferenceCopyLocalPaths)"
+        Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)' != '' And '%(ReferenceCopyLocalPaths.Extension)' == '.dll'"
+      />
+      <_VsmkRetainedLibrary Include="@(_VsmkReachabilityLibrary)" />
+      <_VsmkRetainedLibrary
+        Remove="@(_VsmkOmittedPackageId)"
+        MatchOnMetadata="NuGetPackageId"
+        MatchOnMetadataOptions="CaseInsensitive"
+      />
+      <_VsmkOmittedAssembly Include="@(_VsmkReachabilityLibrary)" />
+      <_VsmkOmittedAssembly Remove="@(_VsmkRetainedLibrary)" />
+    </ItemGroup>
+    <Error
+      Condition="!Exists('$(_VsmkFrameworkPath)/System.Private.CoreLib.dll')"
+      Text="The .NET runtime bundled with this SDK was not found at $(_VsmkFrameworkPath)."
+    />
+    <RemoveDir Directories="$(_VsmkReachabilityPath)" />
+    <!-- Trim analysis warnings describe the game and framework, not this check, so only the exit code matters. -->
+    <Exec
+      EchoOff="true"
+      IgnoreStandardErrorWarningFormat="true"
+      StandardOutputImportance="low"
+      ConsoleToMSBuild="true"
+      IgnoreExitCode="true"
+      Command="&quot;$(_VsmkDotnet)&quot; &quot;$(PkgMicrosoft_NET_ILLink_Tasks)/tools/net/illink.dll&quot; @(_VsmkReachabilityRoot->'-a &quot;%(FullPath)&quot; visible', ' ') @(_VsmkReachabilityLibrary->'-reference &quot;%(FullPath)&quot;', ' ') -d &quot;$(_VsmkFrameworkPath)&quot; -d &quot;$(VsmkGamePath)&quot; -d &quot;$(VsmkGamePath)/Lib&quot; -d &quot;$(VsmkGamePath)/Mods&quot; --trim-mode link --action copyused --skip-unresolved true -out &quot;$(_VsmkReachabilityPath)&quot;"
+    >
+      <Output TaskParameter="ExitCode" PropertyName="_VsmkReachabilityExitCode" />
+      <Output TaskParameter="ConsoleOutput" ItemName="_VsmkReachabilityOutput" />
+    </Exec>
+    <Error
+      Condition="'$(_VsmkReachabilityExitCode)' != '0'"
+      Text="The runtime reachability analysis failed:%0A@(_VsmkReachabilityOutput->'%(Identity)', '%0A')"
+    />
+    <Error
+      Condition="Exists('$(_VsmkReachabilityPath)%(_VsmkOmittedAssembly.Filename)%(_VsmkOmittedAssembly.Extension)')"
+      Text="VSMK code reaches %(_VsmkOmittedAssembly.NuGetPackageId), which mods do not ship. Stop using it or remove it from _VsmkOmittedPackageId."
+    />
+    <Touch Files="$(IntermediateOutputPath)vsmk-reachability.stamp" AlwaysCreate="true" />
+  </Target>
+</Project>

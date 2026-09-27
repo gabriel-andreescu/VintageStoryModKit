@@ -1,6 +1,6 @@
 <Solution>
+  <Project Path="dotnet/VintageStoryModKit.Settings.Core/VintageStoryModKit.Settings.Core.csproj" />
   <Project Path="dotnet/VintageStoryModKit.Settings/VintageStoryModKit.Settings.csproj" />
-  <Project Path="dotnet/VintageStoryModKit/VintageStoryModKit.csproj" />
   <Project Path="dotnet/VintageStoryModKit.Build/VintageStoryModKit.Build.csproj" />
   <Project Path="dotnet/VintageStoryModKit.Tests/VintageStoryModKit.Tests.csproj" />
 </Solution>

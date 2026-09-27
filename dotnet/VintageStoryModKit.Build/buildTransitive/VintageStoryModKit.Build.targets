@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <_VsmkGeneratedPath>$(IntermediateOutputPath)vsmk/</_VsmkGeneratedPath>
+    <_VsmkEmbedPath>$(_VsmkGeneratedPath)embed/</_VsmkEmbedPath>
     <VsmkSettingsNamespace Condition="'$(VsmkSettingsNamespace)' == ''"
       >$(RootNamespace)</VsmkSettingsNamespace>
     <_VsmkGameReferencesPrivate>false</_VsmkGameReferencesPrivate>
@@ -44,7 +45,7 @@
     />
     <EmbeddedResource
       Include="$(VsmkSettingsSchema)"
-      LogicalName="VintageStoryModKit.SettingsSchema"
+      LogicalName="VintageStoryModKit.Settings.Schema"
       Condition="Exists('$(VsmkSettingsSchema)')"
     />
     <Compile
@@ -109,26 +110,93 @@
       Text="Set VsmkStagePath to the staging directory."
     />
   </Target>
-  <Target Name="VsmkStage" DependsOnTargets="_VsmkCheckStagePath;Build">
+  <Target Name="_VsmkCollectRuntime" DependsOnTargets="Build">
+    <ItemGroup>
+      <_VsmkRuntimeCandidate Include="$(TargetPath);@(ReferenceCopyLocalPaths)" />
+      <_VsmkRuntime
+        Include="@(_VsmkRuntimeCandidate)"
+        Condition="'%(Extension)' != '.pdb' And '%(Extension)' != '.xml'"
+      />
+    </ItemGroup>
+  </Target>
+  <Target
+    Name="_VsmkWriteEmbedRequest"
+    DependsOnTargets="_VsmkCollectRuntime"
+    Condition="'@(_VsmkEmbeddedPackage)' != ''"
+  >
+    <ItemGroup>
+      <_VsmkEmbedLibrary Include="@(ReferencePath->'%(RootDir)%(Directory)');@(_VsmkRuntime->'%(RootDir)%(Directory)')" />
+    </ItemGroup>
+    <RemoveDuplicates Inputs="@(_VsmkEmbedLibrary)">
+      <Output TaskParameter="Filtered" ItemName="_VsmkEmbedLibraryUnique" />
+    </RemoveDuplicates>
+    <ItemGroup>
+      <_VsmkEmbedRequest Include="@(_VsmkRuntime->'file%09%(Identity)%09%(DestinationSubDirectory)%(Filename)%(Extension)%09%(NuGetPackageId)')" />
+      <_VsmkEmbedRequest Include="@(_VsmkEmbeddedPackage->'embed%09%(Identity)')" />
+      <_VsmkEmbedRequest Include="@(_VsmkOmittedPackage->'omit%09%(Identity)')" />
+      <_VsmkEmbedRequest Include="@(_VsmkEmbedLibraryUnique->'lib%09%(Identity)')" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="$(_VsmkEmbedPath)request.txt"
+      Lines="@(_VsmkEmbedRequest)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+    />
+  </Target>
+  <Target
+    Name="_VsmkEmbedRuntime"
+    DependsOnTargets="_VsmkWriteEmbedRequest"
+    Condition="'@(_VsmkEmbeddedPackage)' != ''"
+    Inputs="@(_VsmkRuntime);$(_VsmkEmbedPath)request.txt;$(_VsmkBuildToolPath)"
+    Outputs="$(_VsmkEmbedPath)excluded.txt"
+  >
+    <Exec
+      EchoOff="true"
+      Command="$(_VsmkBuildTool) embed-runtime &quot;$(_VsmkEmbedPath)request.txt&quot; &quot;$(_VsmkEmbedPath)&quot;"
+    />
+  </Target>
+  <Target
+    Name="VsmkStage"
+    DependsOnTargets="_VsmkCheckStagePath;_VsmkCollectRuntime;_VsmkEmbedRuntime"
+  >
     <ReadLinesFromFile
       File="$(_VsmkGeneratedPath)generated-files.txt"
       Condition="'$(_VsmkGenerateDescriptors)' == 'true'"
     >
       <Output TaskParameter="Lines" ItemName="_VsmkGeneratedRelative" />
     </ReadLinesFromFile>
+    <ReadLinesFromFile
+      File="$(_VsmkEmbedPath)excluded.txt"
+      Condition="'@(_VsmkEmbeddedPackage)' != ''"
+    >
+      <Output TaskParameter="Lines" ItemName="_VsmkEmbedExcluded" />
+    </ReadLinesFromFile>
+    <ReadLinesFromFile
+      File="$(_VsmkEmbedPath)merged.txt"
+      Condition="'@(_VsmkEmbeddedPackage)' != ''"
+    >
+      <Output TaskParameter="Lines" ItemName="_VsmkMerged" />
+    </ReadLinesFromFile>
     <ItemGroup>
-      <_VsmkRuntimeCandidate Include="$(TargetPath);@(ReferenceCopyLocalPaths)" />
-      <_VsmkRuntimeCandidate
-        Remove="@(_VsmkProvidedPackage)"
-        MatchOnMetadata="NuGetPackageId"
-        MatchOnMetadataOptions="CaseInsensitive"
-      />
-      <_VsmkRuntime
-        Include="@(_VsmkRuntimeCandidate)"
-        Condition="'%(Extension)' != '.pdb' And '%(Extension)' != '.xml'"
-      />
+      <_VsmkRuntime Remove="@(_VsmkEmbedExcluded)" />
       <_VsmkStageFile Include="@(_VsmkRuntime)">
         <Destination>%(_VsmkRuntime.DestinationSubDirectory)%(_VsmkRuntime.Filename)%(_VsmkRuntime.Extension)</Destination>
+      </_VsmkStageFile>
+      <_VsmkStageFile Include="@(_VsmkMerged->'$(_VsmkEmbedPath)merged/%(Identity)')">
+        <Destination>%(_VsmkMerged.Identity)</Destination>
+      </_VsmkStageFile>
+      <_VsmkStageNotice
+        Include="@(_VsmkEmbeddedNotice->'%(Filename)%(Extension)')"
+        Source="%(_VsmkEmbeddedNotice.FullPath)"
+        Condition="'@(_VsmkMerged)' != ''"
+      />
+    </ItemGroup>
+    <RemoveDuplicates Inputs="@(_VsmkStageNotice)">
+      <Output TaskParameter="Filtered" ItemName="_VsmkStageNoticeUnique" />
+    </RemoveDuplicates>
+    <ItemGroup>
+      <_VsmkStageFile Include="@(_VsmkStageNoticeUnique->'%(Source)')">
+        <Destination>licenses/%(_VsmkStageNoticeUnique.Identity)</Destination>
       </_VsmkStageFile>
       <_VsmkStageFile Include="@(_VsmkGeneratedRelative->'$(_VsmkGeneratedPath)%(Identity)')">
         <Destination>%(_VsmkGeneratedRelative.Identity)</Destination>

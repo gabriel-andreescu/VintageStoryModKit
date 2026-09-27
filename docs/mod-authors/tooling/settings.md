@@ -1,31 +1,33 @@
 # Settings reference
 
-`VintageStoryModKit` loads a mod's JSON settings and generates optional menus
-for ConfigKit, ConfigLib and Integrated Mod Manager (IMM). Players can use a
-menu or edit the same file directly.
+`VintageStoryModKit.Settings` loads a mod's JSON settings and generates optional
+menus for ConfigKit, ConfigLib and Integrated Mod Manager (IMM). Players can use
+a menu or edit the same file directly.
 
 ## Reference the runtime
-
-The settings runtime ships as the `vintagestorymodkit` mod instead of inside
-each mod, so mods built against different VSMK versions can be installed
-together.
 
 Reference the runtime package next to `VintageStoryModKit.Build`:
 
 ```xml
-<PackageReference Include="VintageStoryModKit" Version="X.Y.Z" />
+<PackageReference Include="VintageStoryModKit.Settings" Version="X.Y.Z" />
 ```
 
-Declare the mod dependency in `modinfo.json`:
+Players don't install anything else. Staging merges the runtime and its
+dependencies into the mod assembly that uses them, so mods built against
+different VSMK versions can be installed together. The runtime's license notices
+ship under `licenses/`.
 
-```json
-"dependencies": {
-  "game": "1.22.7",
-  "vintagestorymodkit": "X.Y.Z"
-}
-```
+Keep the code that uses VSMK or its dependencies in one assembly of your mod.
+Package libraries built on the same dependencies merge along with the runtime.
+Staging fails when several of your mod's assemblies reference any of them.
 
-Staging leaves out the runtime's assemblies and their dependencies.
+Merged types become internal unless your mod's public API exposes them. An
+exposed type stays public as your mod's own copy, so don't expose VSMK types in
+an API other mods call.
+
+The runtime leaves out Humanizer, which JsonPointer.Net needs only for its
+property name resolvers. Don't call those from your mod. Staging keeps Humanizer
+when an assembly of your mod references it.
 
 ## Define settings
 
@@ -73,7 +75,7 @@ Open the helper in `ModSystem.Start` so the JSON file exists before
 configuration managers load their assets:
 
 ```csharp
-using VintageStoryModKit;
+using VintageStoryModKit.Settings;
 
 private SettingsHost? settings;
 
@@ -181,10 +183,13 @@ client settings and server-only mods need server settings, or
 
 ## Settings without the game host
 
-`VintageStoryModKit.Settings` works without `ICoreAPI`, for code that runs
-outside a loaded world. The `vintagestorymodkit` mod provides it at runtime too.
-`SettingsSchema.Parse` reads a schema, and `SettingsStore` manages one settings
-file with it:
+`VintageStoryModKit.Settings.Core` works without `ICoreAPI`, for code that runs
+outside a loaded world. Reference it instead of `VintageStoryModKit.Settings`
+when that is the only settings code in the assembly. Staging embeds it like the
+rest of the runtime, and its types share the `VintageStoryModKit.Settings`
+namespace. The build embeds the schema as the manifest resource
+`VintageStoryModKit.Settings.Schema`. `SettingsSchema.Parse` reads a schema, and
+`SettingsStore` manages one settings file with it:
 
 - `Reload(onlyIfChanged)` reads the file, applies defaults and validates it.
   Invalid files throw `JsonException` or `SettingsValidationException`, stay
