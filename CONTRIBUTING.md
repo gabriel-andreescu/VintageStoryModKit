@@ -31,12 +31,12 @@ then set the `NUGET_USER` repository secret to the NuGet.org profile name.
 Review dependency license changes before updating packages. Preserve upstream
 notices in the NuGet packages and in the notices staged with mods.
 
-Mods embed `VintageStoryModKit` and `VintageStoryModKit.Settings`. Staging
-merges them and their dependencies into the mod assembly that uses them with
-ILRepack, which `VintageStoryModKit.Build` ships.
-`dotnet/EmbeddedPackage.targets` records the packages mods merge and the notices
-they ship. It leaves out Humanizer, and building `VintageStoryModKit` fails if
-VSMK code starts to reach it.
+Mods embed `VintageStoryModKit.Settings` and `VintageStoryModKit.Settings.Core`,
+which holds the code that runs without the game. Staging merges them and their
+dependencies into the mod assembly that uses them with ILRepack, which
+`VintageStoryModKit.Build` ships. `dotnet/EmbeddedPackage.targets` records the
+packages mods merge and the notices they ship. It leaves out Humanizer, and
+building `VintageStoryModKit.Settings` fails if VSMK code starts to reach it.
 
 ## Game updates
 

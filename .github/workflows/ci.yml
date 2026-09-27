@@ -97,7 +97,7 @@ jobs:
           RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
         run: |
           $PSNativeCommandUseErrorActionPreference = $true
-          $version = dotnet msbuild dotnet/VintageStoryModKit/VintageStoryModKit.csproj --getProperty:PackageVersion --nologo
+          $version = dotnet msbuild dotnet/VintageStoryModKit.Settings/VintageStoryModKit.Settings.csproj --getProperty:PackageVersion --nologo
           if ($env:RELEASE_TAG -and $env:RELEASE_TAG -cne "v$version") {
               throw "Tag '$env:RELEASE_TAG' does not match package version '$version'."
           }

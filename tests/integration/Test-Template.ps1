@@ -197,7 +197,7 @@ try {
     Copy-SourceTree (Join-Path $root "addons") (Join-Path $kit "addons")
     Copy-SourceTree (Join-Path $root "xmake") (Join-Path $kit "xmake")
     Copy-Item (Join-Path $root "addon.lua") $kit
-    foreach ($project in @("VintageStoryModKit.Settings", "VintageStoryModKit", "VintageStoryModKit.Build")) {
+    foreach ($project in @("VintageStoryModKit.Settings.Core", "VintageStoryModKit.Settings", "VintageStoryModKit.Build")) {
         Invoke-External dotnet pack (Join-Path $kit "dotnet/$project/$project.csproj") `
             --configuration Release --output $feed "--property:VsmkGamePath=$GamePath"
     }
@@ -231,7 +231,7 @@ try {
             throw "The stage manifest included a stale file."
         }
         $runtime = Join-Path $consumer "build/intermediates/dotnet/bin/MyMod/release"
-        if (-not (Test-Path (Join-Path $runtime "VintageStoryModKit.dll"))) {
+        if (-not (Test-Path (Join-Path $runtime "VintageStoryModKit.Settings.dll"))) {
             throw "The fixture build output does not contain the VSMK runtime it must embed."
         }
         $expected = @(
@@ -379,7 +379,7 @@ target("Companion")
         --data "vsmk_repository=$($root.Replace('\', '/'))" --data settings=false $template $plainConsumer
     Push-Location $plainConsumer
     try {
-        if ((Test-Path "src/MyMod/Settings") -or (Get-Content -Raw "src/MyMod/MyMod.csproj").Contains('Include="VintageStoryModKit"')) {
+        if ((Test-Path "src/MyMod/Settings") -or (Get-Content -Raw "src/MyMod/MyMod.csproj").Contains('Include="VintageStoryModKit.Settings"')) {
             throw "The settings-free template rendered settings files or the VSMK runtime reference."
         }
         Invoke-External git init
@@ -456,7 +456,7 @@ target("MyMod.Tests")
     }
 
     # A second pack with the same assembly version builds different assemblies, which collide when two mods ship them unmerged.
-    foreach ($project in @("VintageStoryModKit.Settings", "VintageStoryModKit", "VintageStoryModKit.Build")) {
+    foreach ($project in @("VintageStoryModKit.Settings.Core", "VintageStoryModKit.Settings", "VintageStoryModKit.Build")) {
         Invoke-External dotnet pack (Join-Path $kit "dotnet/$project/$project.csproj") `
             --configuration Release --output $feed --version-suffix other "--property:VsmkGamePath=$GamePath"
     }

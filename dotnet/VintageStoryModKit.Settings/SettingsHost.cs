@@ -5,10 +5,9 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
-using VintageStoryModKit.Settings;
 using JsonObject = System.Text.Json.Nodes.JsonObject;
 
-namespace VintageStoryModKit;
+namespace VintageStoryModKit.Settings;
 
 public sealed class SettingsHost : IDisposable
 {

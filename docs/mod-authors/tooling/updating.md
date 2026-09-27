@@ -25,7 +25,7 @@ add_addons("vsmk X.Y.Z")
 
 ```xml
 <PackageReference Include="VintageStoryModKit.Build" Version="X.Y.Z" />
-<PackageReference Include="VintageStoryModKit" Version="X.Y.Z" />
+<PackageReference Include="VintageStoryModKit.Settings" Version="X.Y.Z" />
 ```
 
 Change the `@vX.Y.Z` tag in the [caller workflow](github-actions.md) as well.

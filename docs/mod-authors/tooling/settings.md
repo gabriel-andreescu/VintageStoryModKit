@@ -1,15 +1,15 @@
 # Settings reference
 
-`VintageStoryModKit` loads a mod's JSON settings and generates optional menus
-for ConfigKit, ConfigLib and Integrated Mod Manager (IMM). Players can use a
-menu or edit the same file directly.
+`VintageStoryModKit.Settings` loads a mod's JSON settings and generates optional
+menus for ConfigKit, ConfigLib and Integrated Mod Manager (IMM). Players can use
+a menu or edit the same file directly.
 
 ## Reference the runtime
 
 Reference the runtime package next to `VintageStoryModKit.Build`:
 
 ```xml
-<PackageReference Include="VintageStoryModKit" Version="X.Y.Z" />
+<PackageReference Include="VintageStoryModKit.Settings" Version="X.Y.Z" />
 ```
 
 Players don't install anything else. Staging merges the runtime and its
@@ -75,7 +75,7 @@ Open the helper in `ModSystem.Start` so the JSON file exists before
 configuration managers load their assets:
 
 ```csharp
-using VintageStoryModKit;
+using VintageStoryModKit.Settings;
 
 private SettingsHost? settings;
 
@@ -183,10 +183,12 @@ client settings and server-only mods need server settings, or
 
 ## Settings without the game host
 
-`VintageStoryModKit.Settings` works without `ICoreAPI`, for code that runs
-outside a loaded world. Staging embeds it like the rest of the runtime.
-`SettingsSchema.Parse` reads a schema, and `SettingsStore` manages one settings
-file with it:
+`VintageStoryModKit.Settings.Core` works without `ICoreAPI`, for code that runs
+outside a loaded world. Reference it instead of `VintageStoryModKit.Settings`
+when that is the only settings code in the assembly. Staging embeds it like the
+rest of the runtime, and its types share the `VintageStoryModKit.Settings`
+namespace. `SettingsSchema.Parse` reads a schema, and `SettingsStore` manages
+one settings file with it:
 
 - `Reload(onlyIfChanged)` reads the file, applies defaults and validates it.
   Invalid files throw `JsonException` or `SettingsValidationException`, stay

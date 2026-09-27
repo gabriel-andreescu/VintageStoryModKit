@@ -54,7 +54,7 @@ integration files.
 ## What the template selects
 
 - The C# project targets .NET 10 and references `VintageStoryModKit.Build`. With
-  settings, it also references the `VintageStoryModKit` runtime.
+  settings, it also references the `VintageStoryModKit.Settings` runtime.
 - The project root mirrors the mod ZIP. `modinfo.json` owns the mod ID, name and
   version. It starts at version 0.1.0, requires game 1.22.7 and takes its side
   from the `side` answer.

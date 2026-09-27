@@ -8,7 +8,7 @@
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_VsmkPackTool</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../VintageStoryModKit.Settings/VintageStoryModKit.Settings.csproj" />
+    <ProjectReference Include="../VintageStoryModKit.Settings.Core/VintageStoryModKit.Settings.Core.csproj" />
     <PackageReference Include="ILRepack" Version="2.0.48" GeneratePathProperty="true" />
     <InternalsVisibleTo Include="VintageStoryModKit.Tests" />
     <None

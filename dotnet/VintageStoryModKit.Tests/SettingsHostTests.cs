@@ -3,7 +3,7 @@ using NSubstitute;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
-using VintageStoryModKit;
+using VintageStoryModKit.Settings;
 
 namespace VintageStoryModKit.Tests;
 
