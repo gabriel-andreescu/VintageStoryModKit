@@ -6,7 +6,6 @@ scratch/
 build/
 .xmake/
 .vsmk/
-dotnet/VintageStoryModKit/xmake-addons.lock
 dist/
 bin/
 obj/

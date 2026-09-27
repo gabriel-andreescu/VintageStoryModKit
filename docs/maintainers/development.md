@@ -52,8 +52,9 @@ pwsh -NoProfile -File tests/integration/Test-Template.ps1
 
 It covers generation, the generated formatting hooks, customized Copier updates,
 installed packages, package composition, local deployment, test registration and
-the runtime mod package, using disposable projects. `VSMK_TEST_ROOT` selects the
-temporary directory for these and the unit tests.
+loading two mods built against different VSMK builds on the dedicated server,
+using disposable projects. `VSMK_TEST_ROOT` selects the temporary directory for
+these and the unit tests.
 
 The workflow integration tests require PowerShell 7:
 

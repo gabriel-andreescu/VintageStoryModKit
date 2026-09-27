@@ -1,7 +1,7 @@
 # VintageStoryModKit
 
 An opinionated toolkit for Vintage Story modding, with project generation, build
-and packaging rules, and a shared settings runtime.
+and packaging rules, and a settings runtime embedded in each mod.
 
 Use the [project template](docs/mod-authors/template/projects.md), or
 [add VSMK to an existing mod](docs/mod-authors/tooling/building.md). See the

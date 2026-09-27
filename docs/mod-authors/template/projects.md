@@ -57,8 +57,7 @@ integration files.
   settings, it also references the `VintageStoryModKit` runtime.
 - The project root mirrors the mod ZIP. `modinfo.json` owns the mod ID, name and
   version. It starts at version 0.1.0, requires game 1.22.7 and takes its side
-  from the `side` answer. With settings, it also requires the
-  `vintagestorymodkit` mod.
+  from the `side` answer.
 - With settings, `src/<project_name>/Settings/settings.schema.json` is embedded
   as `VintageStoryModKit.SettingsSchema` and its generated descriptors enter the
   staged payload.

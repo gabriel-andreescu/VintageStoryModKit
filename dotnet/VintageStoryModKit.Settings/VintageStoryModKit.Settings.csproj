@@ -6,6 +6,8 @@
   <ItemGroup>
     <PackageReference Include="JsonSchema.Net" Version="7.4.0" />
     <InternalsVisibleTo Include="VintageStoryModKit.Build" />
+    <_VsmkNotice Include="../../LICENSE" Name="VintageStoryModKit.txt" />
+    <_VsmkNotice Include="../../licenses/json-everything.txt" Name="json-everything.txt" />
   </ItemGroup>
-  <Import Project="../ProvidedPackage.targets" />
+  <Import Project="../EmbeddedPackage.targets" />
 </Project>

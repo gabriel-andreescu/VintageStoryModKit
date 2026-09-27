@@ -24,6 +24,8 @@ $kit = Join-Path $work "kit"
 $consumer = Join-Path $work "consumer"
 $clientConsumer = Join-Path $work "client-consumer"
 $plainConsumer = Join-Path $work "plain-consumer"
+$otherConsumer = Join-Path $work "other-consumer"
+$server = Join-Path $work "server"
 $feed = Join-Path $work "feed"
 $deployment = Join-Path $work "deployment"
 $previousNugetPackages = $env:NUGET_PACKAGES
@@ -230,12 +232,14 @@ try {
         }
         $runtime = Join-Path $consumer "build/intermediates/dotnet/bin/MyMod/release"
         if (-not (Test-Path (Join-Path $runtime "VintageStoryModKit.dll"))) {
-            throw "The fixture build output does not contain the VSMK runtime it must exclude."
+            throw "The fixture build output does not contain the VSMK runtime it must embed."
         }
         $expected = @(
             "MyMod.dll"
             "assets/mymod/config/configlib-patches.json"
             "assets/mymod/config/imm.json"
+            "licenses/VintageStoryModKit.txt"
+            "licenses/json-everything.txt"
             "modinfo.json"
         )
         Assert-EqualFiles $manifest ($expected | Where-Object { $_ -ne "modinfo.json" }) "Stage manifest"
@@ -399,9 +403,7 @@ target("Companion")
         Invoke-External git add .
         Invoke-External git commit -m "add local package source"
         Invoke-External uv run --project $root copier update --trust --defaults --data settings=true --vcs-ref v0.1.1
-        $plainModInfo = Get-Content -Raw "modinfo.json" | ConvertFrom-Json
-        if (-not (Test-Path "src/MyMod/Settings/settings.schema.json") -or
-            $plainModInfo.dependencies.vintagestorymodkit -ne $version) {
+        if (-not (Test-Path "src/MyMod/Settings/settings.schema.json")) {
             throw "Copier update did not add settings to the settings-free project."
         }
         Invoke-External xmake package
@@ -453,34 +455,82 @@ target("MyMod.Tests")
         Pop-Location
     }
 
-    $runtimeProject = Join-Path $kit "dotnet/VintageStoryModKit"
-    Push-Location $runtimeProject
+    # A second pack with the same assembly version builds different assemblies, which collide when two mods ship them unmerged.
+    foreach ($project in @("VintageStoryModKit.Settings", "VintageStoryModKit", "VintageStoryModKit.Build")) {
+        Invoke-External dotnet pack (Join-Path $kit "dotnet/$project/$project.csproj") `
+            --configuration Release --output $feed --version-suffix other "--property:VsmkGamePath=$GamePath"
+    }
+    Invoke-External uv run --project $root copier copy --trust --defaults --vcs-ref v0.1.1 `
+        --data "vsmk_repository=$($root.Replace('\', '/'))" --data project_name=OtherMod $template $otherConsumer
+    $otherStage = Join-Path $work "other-stage"
+    Push-Location $otherConsumer
     try {
-        Invoke-External xmake f -y "--game_path=$GamePath"
-        Invoke-External xmake package
+        $otherProject = "src/OtherMod/OtherMod.csproj"
+        (Get-Content -Raw $otherProject).Replace("Version=""$version""", "Version=""$version-other""") |
+            Set-Content $otherProject
+        Invoke-External dotnet new nugetconfig --force
+        Invoke-External dotnet nuget add source $feed --name vsmk-local --configfile nuget.config
+        Invoke-External dotnet build $otherProject --target:VsmkStage "--property:VsmkStagePath=$otherStage" `
+            "--property:VsmkGamePath=$GamePath"
+        Copy-Item "modinfo.json" $otherStage
     }
     finally {
         Pop-Location
     }
-    $runtimeArchive = [IO.Compression.ZipFile]::OpenRead(
-        (Join-Path $runtimeProject "build/dist/VintageStoryModKit/vintagestorymodkit-$version.zip")
-    )
-    try {
-        Assert-EqualFiles ($runtimeArchive.Entries.FullName) @(
-            "Humanizer.dll"
-            "Json.More.dll"
-            "JsonPointer.Net.dll"
-            "JsonSchema.Net.dll"
-            "VintageStoryModKit.dll"
-            "VintageStoryModKit.Settings.dll"
-            "licenses/Humanizer.txt"
-            "licenses/VintageStoryModKit.txt"
-            "licenses/json-everything.txt"
-            "modinfo.json"
-        ) "Runtime mod package"
+
+    New-Item -ItemType Directory -Force -Path (Join-Path $server "Mods"), (Join-Path $server "ModConfig") | Out-Null
+    Copy-Item $renamedArchivePath (Join-Path $server "Mods")
+    Copy-Item -Recurse $otherStage (Join-Path $server "Mods/OtherMod")
+    $otherConfig = Join-Path $server "ModConfig/othermod.json"
+    Set-Content $otherConfig '{ "Enabled": 3 }'
+    $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
+    $listener.Start()
+    $port = $listener.LocalEndpoint.Port
+    $listener.Stop()
+    $start = [Diagnostics.ProcessStartInfo]::new("dotnet")
+    foreach ($argument in @((Join-Path $GamePath "VintagestoryServer.dll"), "--dataPath=$server", "--port=$port")) {
+        $start.ArgumentList.Add($argument)
     }
-    finally {
-        $runtimeArchive.Dispose()
+    $start.RedirectStandardInput = $true
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+    $serverProcess = [Diagnostics.Process]::Start($start)
+    $serverOutput = $serverProcess.StandardOutput.ReadToEndAsync()
+    $serverErrors = $serverProcess.StandardError.ReadToEndAsync()
+    $serverLog = Join-Path $server "Logs/server-main.log"
+    try {
+        $deadline = [DateTime]::UtcNow.AddMinutes(5)
+        while (-not ((Test-Path $serverLog) -and (Select-String -LiteralPath $serverLog -SimpleMatch "Dedicated Server now running" -Quiet))) {
+            if ($serverProcess.HasExited -or [DateTime]::UtcNow -gt $deadline) {
+                throw "The dedicated server did not start with both mods."
+            }
+            Start-Sleep -Seconds 1
+        }
+        $serverProcess.StandardInput.WriteLine("/stop")
+        if (-not $serverProcess.WaitForExit(60000)) {
+            throw "The dedicated server did not stop."
+        }
+    }
+    catch {
+        # The server keeps its logs open, so it must exit before the work directory can be removed.
+        if (-not $serverProcess.HasExited) {
+            $serverProcess.Kill($true)
+            $serverProcess.WaitForExit()
+        }
+        $console = ($serverOutput.Result + $serverErrors.Result) -split "`r?`n" | Select-Object -Last 60
+        throw "$($_.Exception.Message)`n$($console -join "`n")"
+    }
+    $modErrors = Select-String -LiteralPath $serverLog -Pattern '\[Error\] \[(mymod|othermod)\]'
+    if ($modErrors) {
+        throw "Mods built against different VSMK builds failed to load together:`n$($modErrors | Out-String)"
+    }
+    $defaults = Get-Content -Raw (Join-Path $server "ModConfig/mymod.json") | ConvertFrom-Json
+    if ($defaults.Enabled -ne $true) {
+        throw "The embedded runtime did not write the default settings."
+    }
+    if (-not (Select-String -LiteralPath $serverLog -SimpleMatch 'othermod.json''. Keeping the last valid values. Settings validation failed at /Enabled' -Quiet) -or
+        (Get-Content -Raw $otherConfig).Trim() -ne '{ "Enabled": 3 }') {
+        throw "The embedded runtime did not reject invalid settings and leave the file untouched."
     }
 }
 finally {

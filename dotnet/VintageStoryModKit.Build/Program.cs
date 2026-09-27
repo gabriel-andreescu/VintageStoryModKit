@@ -6,6 +6,7 @@ const string Usage = """
     Usage:
       VintageStoryModKit.Build generate-settings <schema.json> <modinfo.json> <output-directory>
       VintageStoryModKit.Build generate-settings-types <schema.json> <output.cs> <namespace> <type-name>
+      VintageStoryModKit.Build embed-runtime <request.txt> <output-directory>
     """;
 
 try
@@ -19,6 +20,7 @@ try
         ),
         ["generate-settings-types", var schema, var output, var ns, var typeName] =>
             GenerateSettingsTypes(schema, output, ns, typeName),
+        ["embed-runtime", var request, var output] => EmbedRuntime(request, output),
         _ => Fail(Usage),
     };
 }
@@ -84,6 +86,70 @@ static int GenerateSettingsTypes(
         File.WriteAllText(outputPath, contents);
     }
 
+    return 0;
+}
+
+// Each request line holds tab-separated fields: "file", path, destination and package ID,
+// or "embed", "omit" or "lib" followed by one value.
+static int EmbedRuntime(string requestPath, string outputDirectory)
+{
+    List<StagedFile> files = [];
+    HashSet<string> embedded = new(StringComparer.OrdinalIgnoreCase);
+    HashSet<string> omitted = new(StringComparer.OrdinalIgnoreCase);
+    List<string> libraries = [];
+    foreach (string line in File.ReadAllLines(requestPath).Where(line => line.Length > 0))
+    {
+        string[] fields = line.Split('\t');
+        switch (fields)
+        {
+            case ["file", var path, var destination, var packageId]:
+                files.Add(new StagedFile(path, destination.Replace('\\', '/'), packageId));
+                break;
+            case ["embed", var packageId]:
+                embedded.Add(packageId);
+                break;
+            case ["omit", var packageId]:
+                omitted.Add(packageId);
+                break;
+            case ["lib", var directory]:
+                libraries.Add(directory);
+                break;
+            default:
+                throw new SourceException(
+                    Path.GetFullPath(requestPath),
+                    $"Unrecognized request line '{line}'."
+                );
+        }
+    }
+
+    EmbeddingPlan plan = RuntimeEmbedding.Plan(files, embedded, omitted);
+    string merged = Path.Combine(outputDirectory, "merged");
+    if (Directory.Exists(merged))
+    {
+        Directory.Delete(merged, true);
+    }
+    Directory.CreateDirectory(outputDirectory);
+    if (plan.Target is not null)
+    {
+        RuntimeEmbedding.Merge(
+            plan.Target,
+            plan.Inputs,
+            libraries,
+            Path.Combine(merged, plan.Target.Destination),
+            Path.Combine(outputDirectory, "ilrepack.log"),
+            Environment.ProcessPath!,
+            Path.Combine(AppContext.BaseDirectory, "ilrepack", "ILRepack.exe")
+        );
+    }
+
+    File.WriteAllLines(
+        Path.Combine(outputDirectory, "excluded.txt"),
+        plan.Excluded.Select(file => file.Path)
+    );
+    File.WriteAllLines(
+        Path.Combine(outputDirectory, "merged.txt"),
+        plan.Target is null ? [] : [plan.Target.Destination]
+    );
     return 0;
 }
 

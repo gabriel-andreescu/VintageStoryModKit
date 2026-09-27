@@ -2,10 +2,9 @@
 
 With the `settings` option, the template includes
 `src/<project_name>/Settings/settings.schema.json` with an `Enabled` boolean
-that defaults to `true`, references the `VintageStoryModKit` runtime and
-declares the `vintagestorymodkit` mod dependency. VSMK embeds the schema,
-validates it during the build and generates the integration descriptors shipped
-with the mod.
+that defaults to `true` and references the `VintageStoryModKit` runtime, which
+the build merges into the mod. VSMK embeds the schema, validates it during the
+build and generates the integration descriptors shipped with the mod.
 
 Client-only projects create client-owned settings. Universal and server-only
 projects create server-owned settings. Universal mods synchronize their current

@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Mods now embed the settings runtime, so players no longer install a separate
+  mod. Remove the `vintagestorymodkit` dependency from `modinfo.json`.
+  `copier update` removes it from generated projects.
+- Staging fails when several assemblies of a mod reference the settings runtime,
+  its dependencies or libraries built on them.
+- Package libraries built on the settings runtime's dependencies are merged into
+  the mod assembly with it, so they no longer ship as separate files.
+
+### Removed
+
+- The `vintagestorymodkit` runtime mod.
+
 ## [0.1.0] - 2026-09-26
 
 ### Added

@@ -29,20 +29,21 @@ publishing job. Configure its NuGet.org policy for this repository and workflow,
 then set the `NUGET_USER` repository secret to the NuGet.org profile name.
 
 Review dependency license changes before updating packages. Preserve upstream
-notices in the NuGet packages and the runtime mod.
+notices in the NuGet packages and in the notices staged with mods.
 
-`VintageStoryModKit` and `VintageStoryModKit.Settings` run from the shared
-`vintagestorymodkit` mod. Mods declare a minimum version, and players install
-one copy for all of them. Keep runtime API changes backward compatible. Breaking
-changes require dependent mods to update.
+Mods embed `VintageStoryModKit` and `VintageStoryModKit.Settings`. Staging
+merges them and their dependencies into the mod assembly that uses them with
+ILRepack, which `VintageStoryModKit.Build` ships.
+`dotnet/EmbeddedPackage.targets` records the packages mods merge and the notices
+they ship. It leaves out Humanizer, and building `VintageStoryModKit` fails if
+VSMK code starts to reach it.
 
 ## Game updates
 
-For a new Vintage Story release, update `game_version` in `copier.yml` and the
-`game` dependency in `dotnet/VintageStoryModKit/modinfo.json`, then search the
-docs for the previous version. Recheck the ConfigKit, ConfigLib and IMM versions
-in the [settings reference](docs/mod-authors/tooling/settings.md) against the
-new release.
+For a new Vintage Story release, update `game_version` in `copier.yml`, then
+search the docs for the previous version. Recheck the ConfigKit, ConfigLib and
+IMM versions in the [settings reference](docs/mod-authors/tooling/settings.md)
+against the new release.
 
 ## Validate package and rule changes
 
@@ -72,14 +73,6 @@ Keep that global directory for the development session. The source override
 installs uncommitted code under the requested version, so it belongs in an
 isolated development cache. Consumer builds install the tagged source instead.
 
-With the local rules installed, package the runtime mod from its directory:
-
-```powershell
-cd dotnet/VintageStoryModKit
-xmake f -y
-xmake package
-```
-
 Check generated metadata, deployed files and archive contents as appropriate to
 the change. Run the [tests](docs/maintainers/development.md#tests) when changing
 helpers, the generator or packaging rules.
@@ -97,8 +90,6 @@ Keep the XMake version in CI and consumer workflows aligned with
 For VSMK releases, update:
 
 - `VersionPrefix` in `Directory.Build.props`.
-- The version in `dotnet/VintageStoryModKit/modinfo.json` and the `add_addons`
-  pin in `dotnet/VintageStoryModKit/xmake.lua`.
 - The addon recipe in `addons/v/vsmk/xmake.lua`. Keep existing recipe versions
   so consumers can continue installing older releases.
 - `vsmk_version` in `copier.yml`.
@@ -107,9 +98,8 @@ For VSMK releases, update:
 
 Merge `dev` into `main` through a pull request without squashing, then publish a
 matching `vX.Y.Z` tag on `main`. The addon downloads that tag. After checks
-pass, CI publishes the GitHub release with the runtime mod ZIP, then pushes the
-NuGet packages. Upload that ZIP to the Vintage Story mod database. Do not move
-published release tags.
+pass, CI publishes the GitHub release, then pushes the NuGet packages. Do not
+move published release tags.
 
 VSMK and [mod releases](docs/mod-authors/tooling/github-actions.md) share
 [release.yml](.github/workflows/release.yml), which extracts notes with

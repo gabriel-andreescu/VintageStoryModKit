@@ -4,12 +4,21 @@
   <PropertyGroup>
     <Description>Settings runtime for Vintage Story mods.</Description>
     <PackageTags>$(PackageTags) settings</PackageTags>
+    <_VsmkCheckOmittedPackages>true</_VsmkCheckOmittedPackages>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../VintageStoryModKit.Settings/VintageStoryModKit.Settings.csproj" />
     <InternalsVisibleTo Include="VintageStoryModKit.Tests" />
+    <PackageReference
+      Include="Microsoft.NET.ILLink.Tasks"
+      Version="10.0.12"
+      PrivateAssets="all"
+      ExcludeAssets="all"
+      GeneratePathProperty="true"
+    />
+    <_VsmkNotice Include="../../LICENSE" Name="VintageStoryModKit.txt" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <Import Project="../VintageStoryModKit.Build/buildTransitive/VintageStoryModKit.Build.targets" />
-  <Import Project="../ProvidedPackage.targets" />
+  <Import Project="../EmbeddedPackage.targets" />
 </Project>

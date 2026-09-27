@@ -13,10 +13,9 @@ files. It does not reinstall the addon or restore NuGet packages.
 ## VSMK release
 
 `copier update` moves a generated project to the template's VSMK release,
-including the XMake addon, the NuGet packages, the `vintagestorymodkit`
-dependency and the workflow tag. It also moves the `game` dependency in
-`modinfo.json` and the workflow's `game-version` to the template's Vintage Story
-release.
+including the XMake addon, the NuGet packages and the workflow tag. It also
+moves the `game` dependency in `modinfo.json` and the workflow's `game-version`
+to the template's Vintage Story release.
 
 Other projects update these declarations together:
 
@@ -29,9 +28,7 @@ add_addons("vsmk X.Y.Z")
 <PackageReference Include="VintageStoryModKit" Version="X.Y.Z" />
 ```
 
-With the settings runtime, raise the `vintagestorymodkit` dependency in
-`modinfo.json` to the same version. Change the `@vX.Y.Z` tag in the
-[caller workflow](github-actions.md) as well.
+Change the `@vX.Y.Z` tag in the [caller workflow](github-actions.md) as well.
 
 Then update the repository recipes and configure again:
 
