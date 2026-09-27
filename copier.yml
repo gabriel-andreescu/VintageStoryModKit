@@ -68,7 +68,7 @@ vsmk_repository:
 
 vsmk_version:
   type: str
-  default: 0.1.0
+  default: 0.2.0
   when: false
 
 game_version:
