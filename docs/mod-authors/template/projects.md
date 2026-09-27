@@ -59,8 +59,8 @@ integration files.
   version. It starts at version 0.1.0, requires game 1.22.7 and takes its side
   from the `side` answer.
 - With settings, `src/<project_name>/Settings/settings.schema.json` is embedded
-  as `VintageStoryModKit.SettingsSchema` and its generated descriptors enter the
-  staged payload.
+  as `VintageStoryModKit.Settings.Schema` and its generated descriptors enter
+  the staged payload.
 
 See [template defaults](defaults.md) for the generated configuration and
 [settings](settings.md) for the runtime API.

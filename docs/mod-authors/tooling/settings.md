@@ -187,8 +187,9 @@ client settings and server-only mods need server settings, or
 outside a loaded world. Reference it instead of `VintageStoryModKit.Settings`
 when that is the only settings code in the assembly. Staging embeds it like the
 rest of the runtime, and its types share the `VintageStoryModKit.Settings`
-namespace. `SettingsSchema.Parse` reads a schema, and `SettingsStore` manages
-one settings file with it:
+namespace. The build embeds the schema as the manifest resource
+`VintageStoryModKit.Settings.Schema`. `SettingsSchema.Parse` reads a schema, and
+`SettingsStore` manages one settings file with it:
 
 - `Reload(onlyIfChanged)` reads the file, applies defaults and validates it.
   Invalid files throw `JsonException` or `SettingsValidationException`, stay

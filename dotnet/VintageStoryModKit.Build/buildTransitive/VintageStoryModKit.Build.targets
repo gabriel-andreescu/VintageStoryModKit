@@ -45,7 +45,7 @@
     />
     <EmbeddedResource
       Include="$(VsmkSettingsSchema)"
-      LogicalName="VintageStoryModKit.SettingsSchema"
+      LogicalName="VintageStoryModKit.Settings.Schema"
       Condition="Exists('$(VsmkSettingsSchema)')"
     />
     <Compile

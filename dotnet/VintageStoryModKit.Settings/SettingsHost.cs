@@ -11,7 +11,7 @@ namespace VintageStoryModKit.Settings;
 
 public sealed class SettingsHost : IDisposable
 {
-    private const string SchemaResourceName = "VintageStoryModKit.SettingsSchema";
+    private const string SchemaResourceName = "VintageStoryModKit.Settings.Schema";
     private readonly ICoreAPI api;
     private readonly SettingsStore store;
     private readonly string cacheKey;

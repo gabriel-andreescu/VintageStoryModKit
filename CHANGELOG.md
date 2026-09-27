@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `VintageStoryModKit.Settings` namespace. The game-independent schema and
   store, previously `VintageStoryModKit.Settings`, are now
   `VintageStoryModKit.Settings.Core`.
+- The embedded settings schema resource `VintageStoryModKit.SettingsSchema` is
+  now `VintageStoryModKit.Settings.Schema`.
 
 ### Removed
 

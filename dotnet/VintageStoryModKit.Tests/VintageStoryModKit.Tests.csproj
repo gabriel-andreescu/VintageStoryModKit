@@ -33,11 +33,11 @@
   <ItemGroup>
     <EmbeddedResource
       Include="Fixtures/SettingsHostSchema.json"
-      LogicalName="VintageStoryModKit.SettingsSchema"
+      LogicalName="VintageStoryModKit.Settings.Schema"
     />
     <EmbeddedResource
       Include="Fixtures/ClientSettingsHostSchema.json"
-      LogicalName="VintageStoryModKit.ClientSettingsSchema"
+      LogicalName="VintageStoryModKit.Settings.ClientSchema"
     />
   </ItemGroup>
 </Project>
