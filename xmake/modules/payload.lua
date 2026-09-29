@@ -1,3 +1,6 @@
+import("core.project.config")
+import("core.project.depend")
+
 local function staged(stage, select)
     for _, line in ipairs(io.readfile(path.join(stage, ".vsmk-files")):split("\n", { plain = true })) do
         local relative = (line:trim():gsub("\\", "/"))
@@ -34,8 +37,7 @@ local function collect(target, stage, output)
     return files
 end
 
-function prepare(target, stage, output)
-    local files = collect(target, stage, output)
+local function copy(files, output)
     local temporary = os.tmpfile() .. ".dir"
     os.mkdir(temporary)
     try({
@@ -57,6 +59,27 @@ function prepare(target, stage, output)
                 end
             end,
         }),
+    })
+end
+
+function prepare(target, stage, output)
+    local files = collect(target, stage, output)
+    local sources, layout = {}, {}
+    for _, file in ipairs(files) do
+        table.insert(sources, file.source)
+        table.insert(layout, file.relative)
+    end
+    local implementation = os.files(path.join(os.scriptdir(), "**"))
+    table.sort(implementation)
+    table.join2(sources, implementation)
+    -- Staging rewrites .vsmk-files on every build, so the layout is compared as a value instead.
+    depend.on_changed(function()
+        copy(files, output)
+    end, {
+        dependfile = path.join(config.directory(), "vsmk", (target:fullname():gsub("::", "/")), "payload.d"),
+        files = sources,
+        values = { output, layout },
+        changed = not os.isdir(output),
     })
     return output
 end
