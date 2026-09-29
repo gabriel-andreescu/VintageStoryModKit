@@ -8,8 +8,10 @@ runtime, metadata and packaged-output defaults.
 Projects include `.editorconfig` and `.gitattributes` for consistent
 indentation, LF line endings and binary mod files. VS Code recommendations cover
 XMake, C#, Lua, CSharpier, StyLua, Prettier and EditorConfig. `.luarc.json`
-configures Lua Language Server for `xmake.lua`. The generated editor settings
-select CSharpier for C# and XML and enable formatting on save.
+loads the XMake declarations and plugin from
+[xmake-luals](https://github.com/gabriel-andreescu/xmake-luals), which `xmake f`
+installs into `.xmake/luals`. The generated editor settings select CSharpier for
+C# and XML and enable formatting on save.
 
 ## Formatting
 

@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Generated projects' `.luarc.json` loads XMake declarations for the Lua
+  language server from xmake-luals, which `xmake f` installs, instead of listing
+  the generated calls.
 - Builds reuse the staged payload when its files are unchanged.
 
 ## [0.2.0] - 2026-09-27

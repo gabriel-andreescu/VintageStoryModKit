@@ -1,11 +1,11 @@
 # Updating tools and dependencies
 
-| Part                    | Update                                                       | Recorded in                                    |
-| ----------------------- | ------------------------------------------------------------ | ---------------------------------------------- |
-| Generated project files | `copier update`                                              | `.copier-answers.yml` and the generated files. |
-| VSMK XMake addon        | Change the `add_addons` version, then configure              | `xmake.lua` and `xmake-addons.lock`.           |
-| VSMK NuGet packages     | Change the `PackageReference` version, then `dotnet restore` | The consuming `.csproj`.                       |
-| GitHub Actions          | Change the reusable workflow's release tag                   | `.github/workflows/build.yml`.                 |
+| Part                              | Update                                                       | Recorded in                                    |
+| --------------------------------- | ------------------------------------------------------------ | ---------------------------------------------- |
+| Generated project files           | `copier update`                                              | `.copier-answers.yml` and the generated files. |
+| VSMK and xmake-luals XMake addons | Change the `add_addons` version, then configure              | `xmake.lua` and `xmake-addons.lock`.           |
+| VSMK NuGet packages               | Change the `PackageReference` version, then `dotnet restore` | The consuming `.csproj`.                       |
+| GitHub Actions                    | Change the reusable workflow's release tag                   | `.github/workflows/build.yml`.                 |
 
 Keep `.copier-answers.yml` and `xmake-addons.lock` in Git. Copier merges project
 files. It does not reinstall the addon or restore NuGet packages.
