@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 VintageStoryModKit provides shared build rules, dependencies and development
 helpers for Vintage Story modding. Use the [documentation index](docs/README.md)
