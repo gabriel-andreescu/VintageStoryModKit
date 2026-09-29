@@ -31,6 +31,8 @@ jobs:
           version: "0.12.13"
           python-version: "3.11"
           enable-cache: true
+          # The checks job saves the same cache key.
+          save-cache: false
 
       - run: uv sync --locked
       - name: Check generated workflow
@@ -38,7 +40,15 @@ jobs:
           uv run copier copy --defaults --vcs-ref HEAD . "$RUNNER_TEMP/consumer"
           "$RUNNER_TEMP/actionlint" "$RUNNER_TEMP/consumer/.github/workflows/build.yml"
       - name: Test workflow scripts
-        run: uv run pytest tests/integration/workflows
+        run:
+          uv run pytest tests/integration/workflows
+          --junitxml=build/workflow-results.xml
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: workflow-test-results
+          path: build/workflow-results.xml
 
   checks:
     runs-on: ubuntu-24.04
@@ -85,8 +95,9 @@ jobs:
         with:
           path: ~/.cache/pre-commit
           key:
-            pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml')
-            }}
+            pre-commit-${{ runner.os }}-py311-${{
+            hashFiles('.pre-commit-config.yaml',
+            'templates/*pre-commit-config.yaml*') }}
 
       - name: Lint and format
         run: uv run pre-commit run --all-files --show-diff-on-failure
@@ -108,9 +119,15 @@ jobs:
           $PSNativeCommandUseErrorActionPreference = $true
           $env:VSMK_TEST_ROOT = Join-Path $env:RUNNER_TEMP 'vsmk-tests'
           dotnet build --configuration Release
-          dotnet run --project dotnet/VintageStoryModKit.Tests --configuration Release --no-build --no-restore
+          dotnet run --project dotnet/VintageStoryModKit.Tests --configuration Release --no-build --no-restore -- -result-junit (Join-Path $PWD build/dotnet-results.xml)
           pwsh -NoProfile -File tests/integration/Test-Template.ps1
           dotnet pack --configuration Release --no-build --output build/nuget
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: test-results
+          path: build/dotnet-results.xml
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: github.ref_type == 'tag'
