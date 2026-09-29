@@ -8,6 +8,8 @@
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
+  "ruff.path": ["${workspaceFolder}/.venv/Scripts/ruff.exe"],
   "[markdown][json][jsonc][yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
