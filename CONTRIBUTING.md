@@ -97,7 +97,9 @@ For VSMK releases, update:
 - The dated changelog entry.
 
 Merge `dev` into `main` through a pull request without squashing, then publish a
-matching `vX.Y.Z` tag on `main`. The addon downloads that tag. After checks
+matching lightweight `vX.Y.Z` tag on `main` with `git tag vX.Y.Z`. Workflows
+calling `build.yml` by an annotated tag cannot find its nested release workflow,
+so CI rejects annotated release tags. The addon downloads that tag. After checks
 pass, CI publishes the GitHub release, then pushes the NuGet packages. Do not
 move published release tags.
 
