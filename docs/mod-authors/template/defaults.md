@@ -49,8 +49,10 @@ SDK's recommended analyzers and warnings as errors, and places .NET build output
 under `build/intermediates/dotnet`. Builds also enforce the `.editorconfig` code
 style: `var` only where the type is apparent, following
 [Microsoft's conventions](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions#implicitly-typed-local-variables),
-and braces on every block. `global.json` selects the .NET 10 SDK, which the mod
-project also targets. A root `.slnx` solution lists the C# projects.
+and braces on every block. `dotnet format style` and `dotnet format analyzers`
+can apply available code fixes. CSharpier owns whitespace formatting.
+`global.json` selects the .NET 10 SDK, which the mod project also targets. A
+root `.slnx` solution lists the C# projects.
 
 See [build integration](../tooling/building.md) for the MSBuild properties and
 targets.

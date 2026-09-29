@@ -72,6 +72,16 @@ xmake package
 Keep that global directory for the development session. The source override
 installs uncommitted code under the requested version, so it belongs in an
 isolated development cache. Consumer builds install the tagged source instead.
+Reinstall the addon after rule changes.
+
+XMake records the checkout in `xmake-addons.lock` when the lock has no entry for
+the requested version. Don't commit that lock. Once the version is released,
+return the consumer to it from a new shell:
+
+```powershell
+Remove-Item xmake-addons.lock
+xmake f -c -y
+```
 
 Check generated metadata, deployed files and archive contents as appropriate to
 the change. Run the [tests](docs/maintainers/development.md#tests) when changing
