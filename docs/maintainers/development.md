@@ -71,7 +71,7 @@ addon through it as described in
 [Contributing](../../CONTRIBUTING.md#validate-package-and-rule-changes):
 
 ```powershell
-uv run copier copy --defaults --vcs-ref HEAD -d vsmk_repository=C:/path/to/VintageStoryModKit C:/path/to/VintageStoryModKit scratch/MyMod
+uv run copier copy --defaults --vcs-ref HEAD C:/path/to/VintageStoryModKit scratch/MyMod
 ```
 
 `--vcs-ref HEAD` selects the checkout instead of the latest release tag, and

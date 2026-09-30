@@ -61,11 +61,6 @@ deploy:
   help: Initial deployment directories separated by ; (leave blank to disable)
   default: ""
 
-vsmk_repository:
-  type: str
-  help: VSMK package repository (URL or local directory)
-  default: https://github.com/gabriel-andreescu/VintageStoryModKit.git
-
 vsmk_version:
   type: str
   default: 0.2.0

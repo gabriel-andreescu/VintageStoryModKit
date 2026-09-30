@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   the generated calls.
 - Builds reuse the staged payload when its files are unchanged.
 
+### Removed
+
+- Remove the `vsmk_repository` template option.
+
 ## [0.2.0] - 2026-09-27
 
 ### Changed

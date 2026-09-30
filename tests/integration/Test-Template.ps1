@@ -137,13 +137,13 @@ try {
     Invoke-External git -C $template tag v0.1.0
 
     Invoke-External uv run --project $root copier copy --trust --defaults --vcs-ref v0.1.0 `
-        --data "vsmk_repository=$($root.Replace('\', '/'))" $template $consumer
+        $template $consumer
     $serverSchema = Get-Content -Raw (Join-Path $consumer "src/MyMod/Settings/settings.schema.json") | ConvertFrom-Json
     if ($serverSchema.'x-vsmk'.side -ne "Server") {
         throw "The default template did not render server-owned settings."
     }
     Invoke-External uv run --project $root copier copy --trust --defaults --vcs-ref v0.1.0 `
-        --data "vsmk_repository=$($root.Replace('\', '/'))" --data side=Client `
+        --data side=Client `
         --data "deploy=$deployment" $template $clientConsumer
     $clientSchema = Get-Content -Raw (Join-Path $clientConsumer "src/MyMod/Settings/settings.schema.json") | ConvertFrom-Json
     $clientModInfo = Get-Content -Raw (Join-Path $clientConsumer "modinfo.json") | ConvertFrom-Json
@@ -376,7 +376,7 @@ target("Companion")
     }
 
     Invoke-External uv run --project $root copier copy --trust --defaults --vcs-ref v0.1.0 `
-        --data "vsmk_repository=$($root.Replace('\', '/'))" --data settings=false $template $plainConsumer
+        --data settings=false $template $plainConsumer
     Push-Location $plainConsumer
     try {
         if ((Test-Path "src/MyMod/Settings") -or (Get-Content -Raw "src/MyMod/MyMod.csproj").Contains('Include="VintageStoryModKit.Settings"')) {
@@ -461,7 +461,7 @@ target("MyMod.Tests")
             --configuration Release --output $feed --version-suffix other "--property:VsmkGamePath=$GamePath"
     }
     Invoke-External uv run --project $root copier copy --trust --defaults --vcs-ref v0.1.1 `
-        --data "vsmk_repository=$($root.Replace('\', '/'))" --data project_name=OtherMod $template $otherConsumer
+        --data project_name=OtherMod $template $otherConsumer
     $otherStage = Join-Path $work "other-stage"
     Push-Location $otherConsumer
     try {
