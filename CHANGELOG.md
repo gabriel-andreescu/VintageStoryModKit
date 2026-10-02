@@ -6,12 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- The build workflow installs npm dependencies for each committed
+  `package-lock.json` before it runs pre-commit hooks.
+
 ### Changed
 
 - Generated projects' `.luarc.json` loads XMake declarations for the Lua
   language server from xmake-luals, which `xmake f` installs, instead of listing
   the generated calls.
 - Builds reuse the staged payload when its files are unchanged.
+- The build workflow builds with XMake from `gabriel-andreescu/xmake` at a
+  pinned commit instead of the XMake 3.1.1 release.
 
 ### Removed
 

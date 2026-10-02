@@ -115,6 +115,26 @@ jobs:
             pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml')
             }}
 
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        if:
+          hashFiles('.pre-commit-config.yaml') != '' &&
+          hashFiles('package-lock.json', '**/package-lock.json') != ''
+        with:
+          node-version: "22"
+
+      - name: Install Node dependencies
+        if:
+          hashFiles('.pre-commit-config.yaml') != '' &&
+          hashFiles('package-lock.json', '**/package-lock.json') != ''
+        working-directory: ${{ github.workspace }}
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          foreach ($lockfile in git ls-files ':(glob)**/package-lock.json') {
+              $directory = Split-Path -Parent $lockfile
+              npm ci --prefix ($directory ? $directory : '.') --no-audit --no-fund
+          }
+
       - name: Lint and format
         if: hashFiles('.pre-commit-config.yaml') != ''
         working-directory: ${{ github.workspace }}
