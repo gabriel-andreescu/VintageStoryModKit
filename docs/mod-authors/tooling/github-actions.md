@@ -42,9 +42,11 @@ separate workflow, addon and dependency pins.
 | `dist-directory`      | `build/dist`   | ZIP output directory relative to the project.            |
 | `configure-arguments` | Empty          | Additional XMake configure arguments, one per line.      |
 
-Builds use Linux, the project's .NET SDK and XMake 3.1.1. Game references come
-from the official Linux server distribution for `game-version`, independent of
-the mod's `modinfo.json` dependencies. Deployment is disabled.
+Builds use Linux, the project's .NET SDK and the
+[XMake build](https://github.com/gabriel-andreescu/xmake) pinned as
+`XMAKE_COMMIT` in the workflow. Game references come from the official Linux
+server distribution for `game-version`, independent of the mod's `modinfo.json`
+dependencies. Deployment is disabled.
 
 If the repository has a root `.pre-commit-config.yaml`, the workflow runs its
 checks after building, so hooks can use dependencies the build installs. NuGet
