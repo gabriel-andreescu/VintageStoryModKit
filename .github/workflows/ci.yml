@@ -126,6 +126,13 @@ jobs:
           if ($env:RELEASE_TAG -and $env:RELEASE_TAG -cne "v$version") {
               throw "Tag '$env:RELEASE_TAG' does not match package version '$version'."
           }
+          $templateVersion = uv run python -c 'import yaml; print(yaml.safe_load(open("copier.yml"))["vsmk_version"]["default"])'
+          if ($templateVersion -cne $version) {
+              throw "copier.yml vsmk_version '$templateVersion' does not match VSMK version '$version'."
+          }
+          if (-not (Select-String -Path addons/v/vsmk/xmake.lua -SimpleMatch "add_versions(`"$version`", `"v$version`")")) {
+              throw "addons/v/vsmk/xmake.lua does not list $version."
+          }
           "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Build and test

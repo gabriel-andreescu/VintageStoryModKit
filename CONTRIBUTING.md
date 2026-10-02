@@ -106,6 +106,8 @@ For VSMK releases, update:
 - The `@vX.Y.Z` action reference in `.github/workflows/build.yml`.
 - The dated changelog entry.
 
+CI fails when the package version, `vsmk_version` and the recipe disagree.
+
 Merge `dev` into `main` through a pull request without squashing, then publish a
 matching lightweight `vX.Y.Z` tag on `main` with `git tag vX.Y.Z`. Workflows
 calling `build.yml` by an annotated tag cannot find its nested release workflow,
