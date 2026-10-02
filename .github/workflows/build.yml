@@ -72,7 +72,7 @@ jobs:
           $metadata = Get-Content -LiteralPath $env:MODINFO_PATH -Raw | ConvertFrom-Json
           "version=$($metadata.version)" >> $env:GITHUB_OUTPUT
 
-      - uses: gabriel-andreescu/VintageStoryModKit/.github/actions/setup-game@v0.2.0
+      - uses: gabriel-andreescu/VintageStoryModKit/.github/actions/setup-game@v0.3.0
         with:
           version: ${{ inputs.game-version }}
 
