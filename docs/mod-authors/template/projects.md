@@ -73,10 +73,9 @@ Pass answers with `-d name=value`, or use the interactive prompts.
 | ----------------------- | -------------- | -------------------------------------------------------------------- |
 | `project_name`          | `MyMod`        | Project name, mod name, C# root namespace and mod-system class stem. |
 | `mod_id`                | Lowercase name | Vintage Story mod ID and default settings filename.                  |
-| `mod_version`           | `0.1.0`        | Initial mod and package version.                                     |
-| `description`, `author` | Empty          | `modinfo.json` metadata.                                             |
 | `side`                  | `Universal`    | `Universal`, `Client` or `Server` mod metadata.                      |
 | `settings`              | `true`         | Include [settings](settings.md) and configuration menus.             |
+| `description`, `author` | Empty          | `modinfo.json` metadata.                                             |
 | `pre_commit`            | `true`         | Include [formatting hooks](defaults.md#formatting).                  |
 | `deploy`                | Empty          | Initial deployment destinations, separated by `;`. Stored locally.   |
 
