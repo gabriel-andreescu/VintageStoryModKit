@@ -60,6 +60,5 @@ targets.
 ## GitHub Actions
 
 The generated workflow calls VSMK's
-[reusable build workflow](../tooling/github-actions.md) on pushes to `main` and
-`dev`, pull requests and manual runs. Version tags also publish a GitHub
-release.
+[reusable build workflow](../tooling/github-actions.md) on pushes to `main`,
+pull requests and manual runs. Version tags also publish a GitHub release.
