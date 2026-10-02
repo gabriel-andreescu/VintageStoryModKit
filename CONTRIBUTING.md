@@ -1,6 +1,6 @@
 # Contributing
 
-See [Development](docs/maintainers/development.md) for the environment,
+See [Development](docs/maintainers/development.md) for the Python environment,
 formatting and tests.
 
 ## Repository layout
