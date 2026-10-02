@@ -36,7 +36,7 @@ behavior.
 The generated `xmake.lua` registers VSMK and points its mod target at the C#
 project. From the project root:
 
-```sh
+```powershell
 xmake f -y
 xmake
 xmake package
@@ -106,13 +106,13 @@ changes with those customizations.
 
 Keep `.copier-answers.yml` in Git. From a clean working tree:
 
-```sh
+```powershell
 copier update
 ```
 
 To add settings to a project created without them:
 
-```sh
+```powershell
 copier update -d settings=true
 ```
 

@@ -38,7 +38,7 @@ See [settings](settings.md) for the settings properties and runtime.
 To stage the C# output without XMake, invoke the stage target with an absolute
 destination:
 
-```sh
+```powershell
 dotnet build --target:VsmkStage --property:VsmkStagePath="$PWD/build/stage/MyMod"
 ```
 
@@ -72,7 +72,7 @@ The root policy enables XMake's dependency lockfile. `project` declares the
 
 Configure, build and package from the project root:
 
-```sh
+```powershell
 xmake f -y --game_path=C:/Games/Vintagestory
 xmake
 xmake package
