@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/).
 
 ### Changed
 
+- Generated README lists the documentation links and describes CI.
 - Generated `.gitattributes` marks `*.exe` and `*.pdb` as binary.
 - Generated projects' `.luarc.json` loads XMake declarations for the Lua
   language server from xmake-luals, which `xmake f` installs, instead of listing
