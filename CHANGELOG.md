@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/).
 
 ### Added
 
+- Generate only tooling configuration for an existing project with
+  `tooling_only=true`.
 - The build workflow installs npm dependencies for each committed
   `package-lock.json` before it runs pre-commit hooks.
 

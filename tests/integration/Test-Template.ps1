@@ -25,6 +25,7 @@ $consumer = Join-Path $work "consumer"
 $clientConsumer = Join-Path $work "client-consumer"
 $plainConsumer = Join-Path $work "plain-consumer"
 $otherConsumer = Join-Path $work "other-consumer"
+$toolingConsumer = Join-Path $work "tooling-consumer"
 $server = Join-Path $work "server"
 $feed = Join-Path $work "feed"
 $deployment = Join-Path $work "deployment"
@@ -453,6 +454,39 @@ target("MyMod.Tests")
         }
         (Get-Content -Raw $testSource).Replace("X == 1", "X == 2") | Set-Content $testSource
         Invoke-ExternalFailure xmake test
+    }
+    finally {
+        Pop-Location
+    }
+
+    New-Item -ItemType Directory -Force -Path (Join-Path $toolingConsumer "src") | Out-Null
+    Set-Content (Join-Path $toolingConsumer "xmake.lua") 'set_project("Existing")'
+    Set-Content (Join-Path $toolingConsumer "src/Existing.cs") "namespace Existing;"
+    Invoke-External uv run --project $root copier copy --trust --defaults --vcs-ref v0.1.1 `
+        --data tooling_only=true $template $toolingConsumer
+    $toolingFiles = Get-ChildItem $toolingConsumer -File -Recurse -Force | ForEach-Object {
+        $_.FullName.Substring($toolingConsumer.Length + 1).Replace("\", "/")
+    }
+    Assert-EqualFiles $toolingFiles @(
+        ".config/dotnet-tools.json"
+        ".copier-answers.yml"
+        ".editorconfig"
+        ".gitattributes"
+        ".gitignore"
+        ".pre-commit-config.yaml"
+        ".prettierignore"
+        ".prettierrc.json"
+        ".stylua.toml"
+        ".vscode/extensions.json"
+        ".vscode/settings.json"
+        "src/Existing.cs"
+        "xmake.lua"
+    ) "Tooling-only project"
+    Push-Location $toolingConsumer
+    try {
+        Invoke-External git init
+        Invoke-External git add .
+        Invoke-External uv tool run --from pre-commit==4.6.2 pre-commit run --all-files --show-diff-on-failure
     }
     finally {
         Pop-Location

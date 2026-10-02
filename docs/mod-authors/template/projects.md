@@ -69,6 +69,9 @@ See [template defaults](defaults.md) for the generated configuration and
 
 Pass answers with `-d name=value`, or use the interactive prompts.
 
+Set `tooling_only=true` to
+[configure an existing project's tools](#tooling-for-existing-projects).
+
 | Answer                  | Default        | Purpose                                                              |
 | ----------------------- | -------------- | -------------------------------------------------------------------- |
 | `project_name`          | `MyMod`        | Project name, mod name, C# root namespace and mod-system class stem. |
@@ -82,6 +85,22 @@ Pass answers with `-d name=value`, or use the interactive prompts.
 Put code in `src/<project_name>/` and files to include unchanged in `assets/`.
 Add `modicon.png` beside `modinfo.json` and declare it with `add_installfiles`
 in `xmake.lua`.
+
+## Tooling for existing projects
+
+Use the same template to add editor settings, formatter configuration and
+pre-commit hooks to an existing project:
+
+```powershell
+copier copy https://github.com/gabriel-andreescu/VintageStoryModKit.git C:/path/to/ExistingProject -d tooling_only=true
+```
+
+This mode generates only tooling configuration and `.copier-answers.yml`.
+Sources, build files, `modinfo.json` and documentation remain project-owned.
+
+Review existing configuration files during the first copy. Keep project-specific
+settings and hooks in those files. Later `copier update` runs merge template
+changes with those customizations.
 
 ## Adding settings and updating
 
