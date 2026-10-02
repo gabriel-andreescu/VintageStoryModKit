@@ -5,10 +5,13 @@
 | Generated project files           | `copier update`                                              | `.copier-answers.yml` and the generated files. |
 | VSMK and xmake-luals XMake addons | Change the `add_addons` version, then configure              | `xmake.lua` and `xmake-addons.lock`.           |
 | VSMK NuGet packages               | Change the `PackageReference` version, then `dotnet restore` | The consuming `.csproj`.                       |
-| GitHub Actions                    | Change the reusable workflow's release tag                   | `.github/workflows/build.yml`.                 |
+| Build workflow                    | Change the reusable workflow's release tag                   | `.github/workflows/build.yml`.                 |
 
 Keep `.copier-answers.yml` and `xmake-addons.lock` in Git. Copier merges project
 files. It does not reinstall the addon or restore NuGet packages.
+
+The same update command applies to tooling-only projects. Copier merges shared
+configuration changes with project-specific settings and hooks.
 
 ## VSMK release
 
@@ -32,7 +35,7 @@ Change the `@vX.Y.Z` tag in the [caller workflow](github-actions.md) as well.
 
 Then update the repository recipes and configure again:
 
-```sh
+```powershell
 xmake repo --update
 xmake f -y
 dotnet restore
@@ -40,7 +43,11 @@ xmake package
 ```
 
 XMake records the selected addon version in `xmake-addons.lock` and keeps
-different versions side by side. An exact version remains fixed until its
-declaration changes.
+different versions side by side. For a version range, `xmake addon --upgrade`
+resolves it again and updates the lockfile. An exact version remains fixed until
+its declaration changes.
+
+To build against a local VSMK checkout, follow the
+[consumer setup](../../../CONTRIBUTING.md#validate-package-and-rule-changes).
 
 Review the project changes and rebuild before publishing the mod.
