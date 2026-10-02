@@ -21,8 +21,7 @@ package maintenance and validation.
 
 ## Validation
 
-- Run the checks relevant to the change before calling it complete. Do not rely
-  on CI alone.
+- Run the checks relevant to the change before calling it complete.
 - Validate package and build-rule changes through installation and an affected
   consumer. Inspect generated metadata, deployed files or archive contents when
   those outputs change.
