@@ -1,0 +1,10 @@
+{% from 'templates/_partials/json.jinja' import prettier_json %}
+{% set recommendations = [
+    'EditorConfig.EditorConfig',
+    'tboox.xmake-vscode',
+    'esbenp.prettier-vscode',
+    'JohnnyMorganz.stylua',
+    'sumneko.lua'
+] %}
+{% set _ = recommendations.extend(['ms-dotnettools.csharp', 'csharpier.csharpier-vscode']) %}
+{{ prettier_json({'recommendations': recommendations}) }}

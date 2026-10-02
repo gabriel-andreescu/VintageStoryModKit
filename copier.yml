@@ -4,6 +4,7 @@ _envops:
   trim_blocks: true
   lstrip_blocks: true
 _exclude:
+  - _partials
   - |
     {% if tooling_only %}
     **
