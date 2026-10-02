@@ -1,6 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
   "runtime.version": "Lua 5.5",
+  "diagnostics.disable": ["undefined-field", "lowercase-global"],
   "diagnostics.globals": [
     "add_addons",
     "add_installfiles",

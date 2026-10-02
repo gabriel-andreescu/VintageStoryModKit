@@ -1,0 +1,12 @@
+{#- Prettier keeps expanded objects and joins an array onto one line when it fits in 80 columns. -#}
+{%- macro prettier_json(object) -%}
+{%- set members = [] -%}
+{%- for key, value in object.items() -%}
+{%- set member = '  ' ~ (key | to_json) ~ ': ' ~ (value | to_json) -%}
+{%- if value is mapping or (member | length) + (0 if loop.last else 1) > 80 -%}
+{%- set member = '  ' ~ (key | to_json) ~ ': ' ~ (value | to_json(indent=2) | indent(2)) -%}
+{%- endif -%}
+{%- set _ = members.append(member) -%}
+{%- endfor -%}
+{{ '{\n' ~ (members | join(',\n')) ~ '\n}' }}
+{%- endmacro -%}

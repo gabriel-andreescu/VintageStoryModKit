@@ -2,9 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/).
 
 ## [Unreleased]
+
+## [0.3.0] - 2026-10-02
+
+### Added
+
+- Generate only tooling configuration for an existing project with
+  `tooling_only=true`.
+- The build workflow installs npm dependencies for each committed
+  `package-lock.json` before it runs pre-commit hooks.
+
+### Changed
+
+- Generated projects pin xmake-luals 0.1.1.
+- The generated workflow builds pushes to `main` only.
+- Generated README lists the documentation links and describes CI.
+- Generated `.gitattributes` marks `*.exe` and `*.pdb` as binary.
+- Generated projects' `.luarc.json` loads XMake declarations for the Lua
+  language server from xmake-luals, which `xmake f` installs, instead of listing
+  the generated calls.
+- Builds reuse the staged payload when its files are unchanged.
+- The build workflow builds with XMake from `gabriel-andreescu/xmake` at a
+  pinned commit instead of the XMake 3.1.1 release.
+
+### Removed
+
+- Remove the `vsmk_repository` template option.
+- The template no longer asks for the initial mod version. New projects start at
+  0.1.0 in `modinfo.json`.
 
 ## [0.2.0] - 2026-09-27
 

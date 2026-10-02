@@ -64,5 +64,16 @@ uv run pytest tests/integration/workflows
 
 These exercise the workflow scripts without publishing releases.
 
-Validate the installed packages and addon through a consumer as described in
-[Contributing](../../CONTRIBUTING.md#validate-package-and-rule-changes).
+## Mods
+
+Generate a mod from the local checkout, then validate the installed packages and
+addon through it as described in
+[Contributing](../../CONTRIBUTING.md#validate-package-and-rule-changes):
+
+```powershell
+uv run copier copy --defaults --vcs-ref HEAD C:/path/to/VintageStoryModKit scratch/MyMod
+```
+
+`--vcs-ref HEAD` selects the checkout instead of the latest release tag, and
+includes uncommitted changes. Keep generated projects under the ignored
+`scratch/` directory.

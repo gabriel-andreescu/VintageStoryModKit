@@ -1,16 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
   "runtime.version": "Lua 5.5",
-  "diagnostics.globals": [
-    "add_addons",
-    "add_installfiles",
-    "add_repositories",
-    "add_rules",
-    "includes",
-    "set_policy",
-    "set_project",
-    "set_xmakever",
-    "target"
-  ],
+  "runtime.special": { "import": "require" },
+  "runtime.plugin": ".xmake/luals/plugin.lua",
+  "workspace.library": [".xmake/luals/library"],
   "workspace.ignoreDir": [".git", ".xmake", ".vsmk", "build", "dist"]
 }

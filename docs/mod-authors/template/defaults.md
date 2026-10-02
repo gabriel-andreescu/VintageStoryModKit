@@ -6,9 +6,11 @@ runtime, metadata and packaged-output defaults.
 ## Editor and Git settings
 
 Projects include `.editorconfig` and `.gitattributes` for consistent
-indentation, LF line endings and binary mod files. VS Code recommendations cover
-XMake, C#, Lua, CSharpier, StyLua, Prettier and EditorConfig. `.luarc.json`
-configures Lua Language Server for `xmake.lua`. The generated editor settings
+indentation, LF line endings and binary mod files. VS Code settings recommend
+and configure EditorConfig, XMake, Prettier, StyLua and the Lua language server,
+along with C# and CSharpier. `.luarc.json` loads the XMake declarations and
+plugin from [xmake-luals](https://github.com/gabriel-andreescu/xmake-luals),
+which `xmake f` installs into `.xmake/luals`. The generated editor settings
 select CSharpier for C# and XML and enable formatting on save.
 
 ## Formatting
@@ -47,8 +49,10 @@ SDK's recommended analyzers and warnings as errors, and places .NET build output
 under `build/intermediates/dotnet`. Builds also enforce the `.editorconfig` code
 style: `var` only where the type is apparent, following
 [Microsoft's conventions](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions#implicitly-typed-local-variables),
-and braces on every block. `global.json` selects the .NET 10 SDK, which the mod
-project also targets. A root `.slnx` solution lists the C# projects.
+and braces on every block. `dotnet format style` and `dotnet format analyzers`
+can apply available code fixes. CSharpier owns whitespace formatting.
+`global.json` selects the .NET 10 SDK, which the mod project also targets. A
+root `.slnx` solution lists the C# projects.
 
 See [build integration](../tooling/building.md) for the MSBuild properties and
 targets.
@@ -56,6 +60,5 @@ targets.
 ## GitHub Actions
 
 The generated workflow calls VSMK's
-[reusable build workflow](../tooling/github-actions.md) on pushes to `main` and
-`dev`, pull requests and manual runs. Version tags also publish a GitHub
-release.
+[reusable build workflow](../tooling/github-actions.md) on pushes to `main`,
+pull requests and manual runs. Version tags also publish a GitHub release.

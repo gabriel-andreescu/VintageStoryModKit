@@ -2,7 +2,7 @@ name: Build and release
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
     tags: ["v[0-9]*", "[0-9]*"]
   pull_request:
   workflow_dispatch:
@@ -14,6 +14,6 @@ jobs:
   build:
     permissions:
       contents: write
-    uses: gabriel-andreescu/VintageStoryModKit/.github/workflows/build.yml@v{{ vsmk_version }}
+    uses: {{ vsmk_repository | regex_replace('^https?://[^/]+/', '') }}/.github/workflows/build.yml@v{{ vsmk_version }}
     with:
       game-version: "{{ game_version }}"

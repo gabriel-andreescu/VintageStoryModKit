@@ -25,6 +25,7 @@ $consumer = Join-Path $work "consumer"
 $clientConsumer = Join-Path $work "client-consumer"
 $plainConsumer = Join-Path $work "plain-consumer"
 $otherConsumer = Join-Path $work "other-consumer"
+$toolingConsumer = Join-Path $work "tooling-consumer"
 $server = Join-Path $work "server"
 $feed = Join-Path $work "feed"
 $deployment = Join-Path $work "deployment"
@@ -137,13 +138,15 @@ try {
     Invoke-External git -C $template tag v0.1.0
 
     Invoke-External uv run --project $root copier copy --trust --defaults --vcs-ref v0.1.0 `
-        --data "vsmk_repository=$($root.Replace('\', '/'))" $template $consumer
+        --data "vsmk_repository=$root" `
+        $template $consumer
     $serverSchema = Get-Content -Raw (Join-Path $consumer "src/MyMod/Settings/settings.schema.json") | ConvertFrom-Json
     if ($serverSchema.'x-vsmk'.side -ne "Server") {
         throw "The default template did not render server-owned settings."
     }
     Invoke-External uv run --project $root copier copy --trust --defaults --vcs-ref v0.1.0 `
-        --data "vsmk_repository=$($root.Replace('\', '/'))" --data side=Client `
+        --data "vsmk_repository=$root" `
+        --data side=Client `
         --data "deploy=$deployment" $template $clientConsumer
     $clientSchema = Get-Content -Raw (Join-Path $clientConsumer "src/MyMod/Settings/settings.schema.json") | ConvertFrom-Json
     $clientModInfo = Get-Content -Raw (Join-Path $clientConsumer "modinfo.json") | ConvertFrom-Json
@@ -376,7 +379,8 @@ target("Companion")
     }
 
     Invoke-External uv run --project $root copier copy --trust --defaults --vcs-ref v0.1.0 `
-        --data "vsmk_repository=$($root.Replace('\', '/'))" --data settings=false $template $plainConsumer
+        --data "vsmk_repository=$root" `
+        --data settings=false $template $plainConsumer
     Push-Location $plainConsumer
     try {
         if ((Test-Path "src/MyMod/Settings") -or (Get-Content -Raw "src/MyMod/MyMod.csproj").Contains('Include="VintageStoryModKit.Settings"')) {
@@ -455,13 +459,47 @@ target("MyMod.Tests")
         Pop-Location
     }
 
+    New-Item -ItemType Directory -Force -Path (Join-Path $toolingConsumer "src") | Out-Null
+    Set-Content (Join-Path $toolingConsumer "xmake.lua") 'set_project("Existing")'
+    Set-Content (Join-Path $toolingConsumer "src/Existing.cs") "namespace Existing;"
+    Invoke-External uv run --project $root copier copy --trust --defaults --vcs-ref v0.1.1 `
+        --data tooling_only=true $template $toolingConsumer
+    $toolingFiles = Get-ChildItem $toolingConsumer -File -Recurse -Force | ForEach-Object {
+        $_.FullName.Substring($toolingConsumer.Length + 1).Replace("\", "/")
+    }
+    Assert-EqualFiles $toolingFiles @(
+        ".config/dotnet-tools.json"
+        ".copier-answers.yml"
+        ".editorconfig"
+        ".gitattributes"
+        ".gitignore"
+        ".pre-commit-config.yaml"
+        ".prettierignore"
+        ".prettierrc.json"
+        ".stylua.toml"
+        ".vscode/extensions.json"
+        ".vscode/settings.json"
+        "src/Existing.cs"
+        "xmake.lua"
+    ) "Tooling-only project"
+    Push-Location $toolingConsumer
+    try {
+        Invoke-External git init
+        Invoke-External git add .
+        Invoke-External uv tool run --from pre-commit==4.6.2 pre-commit run --all-files --show-diff-on-failure
+    }
+    finally {
+        Pop-Location
+    }
+
     # A second pack with the same assembly version builds different assemblies, which collide when two mods ship them unmerged.
     foreach ($project in @("VintageStoryModKit.Settings.Core", "VintageStoryModKit.Settings", "VintageStoryModKit.Build")) {
         Invoke-External dotnet pack (Join-Path $kit "dotnet/$project/$project.csproj") `
             --configuration Release --output $feed --version-suffix other "--property:VsmkGamePath=$GamePath"
     }
     Invoke-External uv run --project $root copier copy --trust --defaults --vcs-ref v0.1.1 `
-        --data "vsmk_repository=$($root.Replace('\', '/'))" --data project_name=OtherMod $template $otherConsumer
+        --data "vsmk_repository=$root" `
+        --data project_name=OtherMod $template $otherConsumer
     $otherStage = Join-Path $work "other-stage"
     Push-Location $otherConsumer
     try {

@@ -3,13 +3,37 @@ _subdirectory: templates
 _envops:
   trim_blocks: true
   lstrip_blocks: true
+_exclude:
+  - _partials
+  - |
+    {% if tooling_only %}
+    **
+    !/.config/
+    !/.config/**
+    !/.editorconfig
+    !/.gitattributes
+    !/.gitignore
+    !/.pre-commit-config.yaml
+    !/.prettierignore
+    !/.prettierrc.json
+    !/.stylua.toml
+    !/.vscode/
+    !/.vscode/**
+    !/{{ _copier_conf.answers_file }}
+    {% endif %}
 _skip_if_exists:
   - .xmake/vsmk/deploy.json
+
+tooling_only:
+  type: bool
+  help: Configure tooling for an existing project
+  default: false
 
 project_name:
   type: str
   help: Project name and C# root namespace
   default: MyMod
+  when: "{{ not tooling_only }}"
   validator: >-
     {% if not (project_name | regex_search('^[A-Za-z][A-Za-z0-9]*$')) %} Use
     letters and digits, starting with a letter. {% endif %}
@@ -18,24 +42,10 @@ mod_id:
   type: str
   help: Vintage Story mod ID
   default: "{{ project_name | lower }}"
+  when: "{{ not tooling_only }}"
   validator: >-
     {% if not (mod_id | regex_search('^[a-z][a-z0-9]*$')) %} Use lowercase
     letters and digits, starting with a letter. {% endif %}
-
-mod_version:
-  type: str
-  help: Initial mod version
-  default: 0.1.0
-
-description:
-  type: str
-  help: Short project description
-  default: ""
-
-author:
-  type: str
-  help: Author
-  default: ""
 
 side:
   type: str
@@ -45,11 +55,25 @@ side:
     Client: Client
     Server: Server
   default: Universal
+  when: "{{ not tooling_only }}"
 
 settings:
   type: bool
   help: Include JSON settings and generated configuration menus
   default: true
+  when: "{{ not tooling_only }}"
+
+description:
+  type: str
+  help: Short project description
+  default: ""
+  when: "{{ not tooling_only }}"
+
+author:
+  type: str
+  help: Author
+  default: ""
+  when: "{{ not tooling_only }}"
 
 pre_commit:
   type: bool
@@ -60,15 +84,21 @@ deploy:
   type: str
   help: Initial deployment directories separated by ; (leave blank to disable)
   default: ""
+  when: "{{ not tooling_only }}"
 
 vsmk_repository:
   type: str
-  help: VSMK package repository (URL or local directory)
-  default: https://github.com/gabriel-andreescu/VintageStoryModKit.git
+  default: https://github.com/gabriel-andreescu/VintageStoryModKit
+  when: false
+
+vsmk_docs:
+  type: str
+  default: "{{ vsmk_repository }}/blob/main/docs"
+  when: false
 
 vsmk_version:
   type: str
-  default: 0.2.0
+  default: 0.3.0
   when: false
 
 game_version:

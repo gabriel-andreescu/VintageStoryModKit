@@ -1,12 +1,14 @@
 set_xmakever("3.1.1")
-set_project("{{ project_name }}")
+set_project({{ project_name | to_json(ensure_ascii=False) }})
 set_policy("package.requires_lock", true)
 
 add_repositories({{ ('vsmk ' ~ vsmk_repository | replace('\\', '/')) | to_json(ensure_ascii=False) }})
-add_addons("vsmk {{ vsmk_version }}")
-includes("@addon/vsmk/project")
+add_repositories("xmake-luals https://github.com/gabriel-andreescu/xmake-luals.git")
+add_addons("vsmk {{ vsmk_version }}", "xmake-luals 0.1.1")
+includes("@addon/vsmk/project", "@addon/xmake-luals/luals")
 
-target("{{ project_name }}", function()
+-- Packages
+target({{ project_name | to_json(ensure_ascii=False) }}, function()
     add_rules("@addon/vsmk/mod", { project = "src/{{ project_name }}/{{ project_name }}.csproj" })
     add_installfiles("$(projectdir)/modinfo.json")
     add_installfiles("$(projectdir)/(assets/**)")
