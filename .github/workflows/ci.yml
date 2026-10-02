@@ -55,10 +55,8 @@ jobs:
 
       - name: Check release tag type
         if: github.ref_type == 'tag'
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          type=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$GITHUB_REF_NAME" --jq .object.type)
+          type=$(git cat-file -t "refs/tags/$GITHUB_REF_NAME")
           if [ "$type" != commit ]; then
             echo "::error::$GITHUB_REF_NAME points to a '$type' object, not a commit. Workflows calling build.yml by an annotated tag cannot find its nested release workflow. Replace it with a lightweight tag on the same commit."
             exit 1
