@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/).
 ### Removed
 
 - Remove the `vsmk_repository` template option.
+- The template no longer asks for the initial mod version. New projects start at
+  0.1.0 in `modinfo.json`.
 
 ## [0.2.0] - 2026-09-27
 

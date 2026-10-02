@@ -22,21 +22,6 @@ mod_id:
     {% if not (mod_id | regex_search('^[a-z][a-z0-9]*$')) %} Use lowercase
     letters and digits, starting with a letter. {% endif %}
 
-mod_version:
-  type: str
-  help: Initial mod version
-  default: 0.1.0
-
-description:
-  type: str
-  help: Short project description
-  default: ""
-
-author:
-  type: str
-  help: Author
-  default: ""
-
 side:
   type: str
   help: Game side
@@ -50,6 +35,16 @@ settings:
   type: bool
   help: Include JSON settings and generated configuration menus
   default: true
+
+description:
+  type: str
+  help: Short project description
+  default: ""
+
+author:
+  type: str
+  help: Author
+  default: ""
 
 pre_commit:
   type: bool

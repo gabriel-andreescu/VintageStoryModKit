@@ -4,7 +4,7 @@
   "name": "{{ project_name }}",
   "authors": [{% if author %}{{ author | to_json(ensure_ascii=False) }}{% endif %}],
   "description": {{ description | to_json(ensure_ascii=False) }},
-  "version": "{{ mod_version }}",
+  "version": "0.1.0",
   "dependencies": {
     "game": "{{ game_version }}"
   },
