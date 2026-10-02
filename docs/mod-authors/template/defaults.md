@@ -17,16 +17,14 @@ select CSharpier for C# and XML and enable formatting on save.
 
 Pre-commit formats staged files with:
 
-- **Prettier:** Markdown (`.md`), YAML (`.yaml`, `.yml`) and JSON (`.json`,
-  `.jsonc`), using `proseWrap: "always"`.
-- **StyLua:** Lua (`.lua`), using four-space indentation.
-- **[CSharpier](https://csharpier.com/docs/About):** C# and XML (`.cs`, `.csx`,
-  `.csproj`, `.props`, `.targets`, `.slnx`, `.xml`, `.config`). The hook
-  restores the pinned .NET tool before formatting.
+- **Prettier:** Markdown, YAML and JSON, with `proseWrap: "always"`.
+- **StyLua:** Lua, using four-space indentation.
+- **CSharpier:** C# and XML, using CSharpier 1.3.0. The hook restores the pinned
+  .NET tool before formatting.
 
 After initializing the project's Git repository, install the hooks with:
 
-```sh
+```powershell
 uv tool install pre-commit
 pre-commit install
 ```
@@ -35,7 +33,7 @@ Run formatting on all tracked files with `pre-commit run --all-files`. CI runs
 the same hooks and fails if they change files or report errors. Restore and run
 CSharpier independently with:
 
-```sh
+```powershell
 dotnet tool restore
 dotnet csharpier format .
 ```
@@ -57,7 +55,7 @@ root `.slnx` solution lists the C# projects.
 See [build integration](../tooling/building.md) for the MSBuild properties and
 targets.
 
-## GitHub Actions
+## CI workflow
 
 The generated workflow calls VSMK's
 [reusable build workflow](../tooling/github-actions.md) on pushes to `main`,
