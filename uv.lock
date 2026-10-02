@@ -581,7 +581,7 @@ dev = [
 dev = [
     { name = "copier", specifier = ">=9.0,<10" },
     { name = "pre-commit", specifier = ">=4.6.2,<5" },
-    { name = "pytest", specifier = ">=9,<10" },
+    { name = "pytest", specifier = ">=8.4,<10" },
     { name = "pyyaml", specifier = ">=6,<7" },
     { name = "ruff", specifier = ">=0.16.7" },
 ]
