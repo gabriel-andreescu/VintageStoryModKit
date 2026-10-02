@@ -90,6 +90,7 @@ jobs:
           actions-cache-folder: .xmake-install
 
       - run: uv sync --locked
+      - run: dotnet tool restore
 
       - name: Read game version
         id: game

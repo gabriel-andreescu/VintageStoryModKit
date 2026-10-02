@@ -165,6 +165,7 @@ try {
     Invoke-External git -C $consumer add .
     Push-Location $consumer
     try {
+        Invoke-External dotnet tool restore
         Invoke-External uv tool run --from pre-commit==4.6.2 pre-commit run --all-files --show-diff-on-failure
     }
     finally {
@@ -390,6 +391,7 @@ target("Companion")
         Invoke-External git config user.name "VSMK tests"
         Invoke-External git config user.email "vsmk-tests@example.invalid"
         Invoke-External git add .
+        Invoke-External dotnet tool restore
         Invoke-External uv tool run --from pre-commit==4.6.2 pre-commit run --all-files --show-diff-on-failure
         Invoke-External git commit -m "generate settings-free project"
         Invoke-External dotnet new nugetconfig --force
@@ -486,6 +488,7 @@ target("MyMod.Tests")
     try {
         Invoke-External git init
         Invoke-External git add .
+        Invoke-External dotnet tool restore
         Invoke-External uv tool run --from pre-commit==4.6.2 pre-commit run --all-files --show-diff-on-failure
     }
     finally {

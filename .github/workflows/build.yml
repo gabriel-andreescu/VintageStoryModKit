@@ -135,6 +135,13 @@ jobs:
               npm ci --prefix ($directory ? $directory : '.') --no-audit --no-fund
           }
 
+      - name: Restore .NET tools
+        if:
+          hashFiles('.pre-commit-config.yaml') != '' &&
+          hashFiles('.config/dotnet-tools.json') != ''
+        working-directory: ${{ github.workspace }}
+        run: dotnet tool restore
+
       - name: Lint and format
         if: hashFiles('.pre-commit-config.yaml') != ''
         working-directory: ${{ github.workspace }}

@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- The generated commit hooks no longer restore the .NET tools, since hooks only
+  check files. CSharpier needs `dotnet tool restore` once per clone, and the
+  build workflow restores the tools before running the hooks.
+
 ## [0.3.0] - 2026-10-02
 
 ### Added

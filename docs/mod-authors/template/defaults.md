@@ -19,8 +19,7 @@ Pre-commit formats staged files with:
 
 - **Prettier:** Markdown, YAML and JSON, with `proseWrap: "always"`.
 - **StyLua:** Lua, using four-space indentation.
-- **CSharpier:** C# and XML, using CSharpier 1.3.0. The hook restores the pinned
-  .NET tool before formatting.
+- **CSharpier:** C# and XML, using CSharpier 1.3.0.
 
 After initializing the project's Git repository, install the hooks with:
 
@@ -29,16 +28,10 @@ uv tool install pre-commit
 pre-commit install
 ```
 
-Run formatting on all tracked files with `pre-commit run --all-files`. CI runs
-the same hooks and fails if they change files or report errors. Restore and run
-CSharpier independently with:
-
-```powershell
-dotnet tool restore
-dotnet csharpier format .
-```
-
-Use `dotnet csharpier check .` to check formatting without editing files.
+CSharpier needs `dotnet tool restore` once per clone. Run formatting on all
+tracked files with `pre-commit run --all-files`. CI runs the same hooks and
+fails if they change files or report errors. Use `dotnet csharpier check .` to
+check formatting without editing files.
 
 ## C# project
 
