@@ -2,7 +2,7 @@ set_xmakever("3.1.1")
 set_project("{{ project_name }}")
 set_policy("package.requires_lock", true)
 
-add_repositories("vsmk https://github.com/gabriel-andreescu/VintageStoryModKit.git")
+add_repositories({{ ('vsmk ' ~ vsmk_repository | replace('\\', '/')) | to_json(ensure_ascii=False) }})
 add_repositories("xmake-luals https://github.com/gabriel-andreescu/xmake-luals.git")
 add_addons("vsmk {{ vsmk_version }}", "xmake-luals 0.1.0")
 includes("@addon/vsmk/project", "@addon/xmake-luals/luals")
