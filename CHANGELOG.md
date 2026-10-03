@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-03
+
+### Changed
+
+- The generated commit hooks no longer restore the .NET tools, since hooks only
+  check files. CSharpier needs `dotnet tool restore` once per clone, and the
+  build workflow restores the tools before running the hooks.
+
 ## [0.3.0] - 2026-10-02
 
 ### Added
@@ -30,7 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/).
 
 ### Removed
 
-- Remove the `vsmk_repository` template option.
+- The template no longer asks for the VSMK repository.
 - The template no longer asks for the initial mod version. New projects start at
   0.1.0 in `modinfo.json`.
 

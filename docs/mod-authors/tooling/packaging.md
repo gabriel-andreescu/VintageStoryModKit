@@ -71,7 +71,9 @@ Use full target names, including namespaces. Paths are absolute or relative to
 the project root. Each mod accepts multiple destinations. Give each mod its own
 destination directory.
 
-```sh
+Build the mod or the project:
+
+```powershell
 xmake MyMod
 xmake
 ```
@@ -83,17 +85,15 @@ with `xmake f --deploy=n`.
 Rebuilds remove obsolete files previously deployed by that mod. Conflicts with
 another mod or unowned files fail before deployment changes its destinations.
 
-Ownership records live in the ignored `.vsmk/deployment.lua`, independently of
-XMake's cache. After deleting `.xmake/`, restore `deploy.json` to resume
-deployment to the same destinations.
-
-Removing a destination leaves its deployed files in place. Keep `.vsmk/` while
-those files are deployed. If ownership records are lost, remove this project's
-previously deployed files or choose an empty destination before deploying again.
+Ownership records live in `.vsmk/deployment.lua`, independently of XMake's
+cache. After removing `.xmake/`, restore `deploy.json` to resume deployment.
+Removing a destination leaves its files in place. Keep `.vsmk/` while its
+outputs are deployed. If ownership records are lost, remove the project's
+previously deployed files or choose an empty destination.
 
 ## ZIP packages
 
-```sh
+```powershell
 xmake package
 ```
 

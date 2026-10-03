@@ -40,7 +40,7 @@ jobs:
       - run: uv sync --locked
       - name: Check generated workflow
         run: |
-          uv run copier copy --defaults --vcs-ref HEAD . "$RUNNER_TEMP/consumer"
+          uv run copier copy --defaults --trust --vcs-ref HEAD . "$RUNNER_TEMP/consumer"
           "$RUNNER_TEMP/actionlint" "$RUNNER_TEMP/consumer/.github/workflows/build.yml"
       - name: Test workflow scripts
         run:
@@ -90,6 +90,7 @@ jobs:
           actions-cache-folder: .xmake-install
 
       - run: uv sync --locked
+      - run: dotnet tool restore
 
       - name: Read game version
         id: game

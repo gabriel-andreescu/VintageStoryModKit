@@ -98,7 +98,7 @@ vsmk_docs:
 
 vsmk_version:
   type: str
-  default: 0.3.0
+  default: 0.4.0
   when: false
 
 game_version:

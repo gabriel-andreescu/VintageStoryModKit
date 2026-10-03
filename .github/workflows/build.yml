@@ -72,7 +72,7 @@ jobs:
           $metadata = Get-Content -LiteralPath $env:MODINFO_PATH -Raw | ConvertFrom-Json
           "version=$($metadata.version)" >> $env:GITHUB_OUTPUT
 
-      - uses: gabriel-andreescu/VintageStoryModKit/.github/actions/setup-game@v0.3.0
+      - uses: gabriel-andreescu/VintageStoryModKit/.github/actions/setup-game@v0.4.0
         with:
           version: ${{ inputs.game-version }}
 
@@ -134,6 +134,13 @@ jobs:
               $directory = Split-Path -Parent $lockfile
               npm ci --prefix ($directory ? $directory : '.') --no-audit --no-fund
           }
+
+      - name: Restore .NET tools
+        if:
+          hashFiles('.pre-commit-config.yaml') != '' &&
+          hashFiles('.config/dotnet-tools.json') != ''
+        working-directory: ${{ github.workspace }}
+        run: dotnet tool restore
 
       - name: Lint and format
         if: hashFiles('.pre-commit-config.yaml') != ''

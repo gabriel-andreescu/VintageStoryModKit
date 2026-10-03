@@ -9,7 +9,7 @@ Use the [project template](docs/mod-authors/template/projects.md), or
 
 ## Create a project
 
-Requires [Copier](https://copier.readthedocs.io/en/stable/), Git,
+Requires [Copier 9](https://copier.readthedocs.io/en/stable/), Git,
 [XMake 3.1.1 or newer](https://github.com/xmake-io/xmake/releases/tag/v3.1.1)
 and the .NET 10 SDK.
 
@@ -33,7 +33,7 @@ copier update
 
 ## Development
 
-See [development setup and checks](docs/maintainers/development.md) and
+See [development setup and tests](docs/maintainers/development.md) and
 [contribution guidelines](CONTRIBUTING.md).
 
 ## License

@@ -20,12 +20,6 @@ repos:
         language: system
         entry: uv run --locked ruff format
         types_or: [python, pyi]
-      - id: dotnet-tool-restore
-        name: Restore .NET tools
-        language: system
-        entry: dotnet tool restore
-        pass_filenames: false
-        files: (^|/)(global\.json|\.config/dotnet-tools\.json)$|\.(cs|csx|csproj|props|targets|slnx|xml|config)$
       - id: csharpier
         name: CSharpier
         language: system
