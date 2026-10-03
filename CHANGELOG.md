@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-03
+
 ### Changed
 
 - The generated commit hooks no longer restore the .NET tools, since hooks only
