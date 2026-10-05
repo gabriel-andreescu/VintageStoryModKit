@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 env:
-  XMAKE_COMMIT: a6efc6c904919a5023e1de24a44965fbac770330
+  XMAKE_COMMIT: 793c60b10fca50fd6e6e6531fe571859b00ae22f
 
 jobs:
   workflows:
